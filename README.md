@@ -1,4 +1,4 @@
-# Vector Store를 이용한 Question/Answering Chatbot 만들기 
+# Amazon Kendra를 이용한 Question/Answering Chatbot 만들기 
 
 여기서는 Amazon Bedrock의 LLM 모델을 이용하여 Question/Answering을 수행하는 Chatbot을 만듧니다. Question/Answering의 정확도를 높이기 위하여 문서를 업로드하여 Kendra로 분석하고, LLM이 Question/Answering 수행시 kendra에 있는 index db를 통해 가장 유사한 문서를 추출하여 사용할 수 있습니다. 이렇게 vector store를 사용하면 LLM의 token 사이즈를 넘어서는 긴문장을 활용하여 Question/Answering과 같은 Task를 수행할 수 있으며 환각(hallucination) 영향을 줄일 수 있습니다.
 
