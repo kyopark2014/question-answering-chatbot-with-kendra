@@ -15,11 +15,10 @@ IAM Role에 아래와 같은 Permission을 추가합니다.
 ```java
 {
     "Effect": "Allow",
-        "Action": [
-            "kendra:BatchPutDocument",
-            "kendra:BatchDeleteDocument"
-        ],
-            "Resource": "arn:aws:kendra:[your-region]:[your-account-id]:index/[index-id]"
+    "Action": [
+        "kendra:*"
+    ],
+    "Resource": "arn:aws:kendra:[your-region]:[your-account-id]:index/[index-id]"
 }]
 ```
 
