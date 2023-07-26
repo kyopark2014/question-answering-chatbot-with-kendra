@@ -75,8 +75,6 @@ bedrock_embeddings = BedrockEmbeddings(client=boto3_bedrock)
 
 
 
-```
-
 ### 문서 등록
 
 문서를 업로드하면 vector store에 저장합니다. 파일을 여러번 업로드할 경우에는 기존 vector store에 추가합니다. 
