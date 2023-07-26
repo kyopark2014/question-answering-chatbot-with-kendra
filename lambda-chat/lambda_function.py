@@ -240,6 +240,17 @@ def lambda_handler(event, context):
             # load documents where text, pdf, csv are supported
             docs = load_document(file_type, object)
 
+            kendra = boto3.client("kendra")
+
+            result = kendra.batch_put_document(
+                IndexId = kendraIndex,
+                Documents = docs
+            )
+
+            print(result)
+
+            msg = result
+
             # retriever.get_relevant_documents("what is langchain")
                     
             # summerization
