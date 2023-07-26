@@ -258,13 +258,8 @@ def lambda_handler(event, context):
             
             # load documents where text, pdf, csv are supported
             docs = load_document(file_type, object)
-                        
-            vectorstore = OpenSearchVectorSearch.from_documents(
-                docs, 
-                bedrock_embeddings, 
-                opensearch_url=opensearch_url,
-                http_auth=(opensearch_account, opensearch_passwd),
-            )
+
+            # Kendra                        
             if enableRAG==False: 
                 enableRAG = True
                     
