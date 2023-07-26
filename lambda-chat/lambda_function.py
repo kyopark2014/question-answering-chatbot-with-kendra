@@ -95,9 +95,6 @@ print('models: ', modelInfo)
 
 llm = Bedrock(model_id=modelId, client=boto3_bedrock)
 
-# embedding
-bedrock_embeddings = BedrockEmbeddings(client=boto3_bedrock)
-
 retriever = AmazonKendraRetriever(index_id=kendraIndex)
 
 # load documents from s3
@@ -139,37 +136,40 @@ def load_document(file_type, s3_file_name):
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
 
-    print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
-    print('----')
-    for i, rel_doc in enumerate(relevant_documents):
-        print_ww(f'## Document {i+1}: {rel_doc.page_content}.......')
-        print('---')
+    if(len(relevant_documents)==0):
+        return llm(query)
+    else:
+        print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
+        print('----')
+        for i, rel_doc in enumerate(relevant_documents):
+            print_ww(f'## Document {i+1}: {rel_doc.page_content}.......')
+            print('---')
 
-    prompt_template = """Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+        prompt_template = """Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
-    {context}
+        {context}
 
-    Question: {question}
-    Assistant:"""
-    PROMPT = PromptTemplate(
-        template=prompt_template, input_variables=["context", "question"]
-    )
+        Question: {question}
+        Assistant:"""
+        PROMPT = PromptTemplate(
+            template=prompt_template, input_variables=["context", "question"]
+        )
 
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=vectorstore.as_retriever(
-            search_type="similarity", search_kwargs={"k": 3}
-        ),
-        return_source_documents=True,
-        chain_type_kwargs={"prompt": PROMPT}
-    )
-    result = qa({"query": query})
-    
-    source_documents = result['source_documents']
-    print(source_documents)
+        qa = RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            retriever=vectorstore.as_retriever(
+                search_type="similarity", search_kwargs={"k": 3}
+            ),
+            return_source_documents=True,
+            chain_type_kwargs={"prompt": PROMPT}
+        )
+        result = qa({"query": query})
+        
+        source_documents = result['source_documents']
+        print(source_documents)
 
-    return result['result']
+        return result['result']
         
 def lambda_handler(event, context):
     print(event)
@@ -228,7 +228,6 @@ def lambda_handler(event, context):
     else:             
         if type == 'text':
             text = body
-            # msg = llm(text)
             msg = get_answer_using_template(text)
             print('msg1: ', msg)
             
