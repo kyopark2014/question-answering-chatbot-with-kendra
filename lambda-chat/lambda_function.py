@@ -20,13 +20,13 @@ from langchain.agents.agent_types import AgentType
 from langchain.llms.bedrock import Bedrock
 from langchain.chains.question_answering import load_qa_chain
 
-from langchain.vectorstores import FAISS
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.document_loaders import CSVLoader
 from langchain.embeddings import BedrockEmbeddings
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
+from langchain.retrievers import AmazonKendraRetriever
 
 module_path = "."
 sys.path.append(os.path.abspath(module_path))
@@ -40,6 +40,7 @@ configTableName = os.environ.get('configTableName')
 endpoint_url = os.environ.get('endpoint_url')
 bedrock_region = os.environ.get('bedrock_region')
 rag_type = os.environ.get('rag_type')
+kendraIndex = os.environ.get('kendraIndex')
 modelId = os.environ.get('model_id')
 print('model_id: ', modelId)
 
@@ -97,7 +98,7 @@ llm = Bedrock(model_id=modelId, client=boto3_bedrock)
 # embedding
 bedrock_embeddings = BedrockEmbeddings(client=boto3_bedrock)
 
-enableRAG = False
+retriever = AmazonKendraRetriever(index_id=kendraIndex)
 
 # load documents from s3
 def load_document(file_type, s3_file_name):
@@ -135,24 +136,8 @@ def load_document(file_type, s3_file_name):
     ]
     return docs
               
-def get_answer_using_query(query, vectorstore, rag_type):
-    wrapper_store = VectorStoreIndexWrapper(vectorstore=vectorstore)
-    
-    relevant_documents = vectorstore.similarity_search(query)
-    
-    print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
-    print('----')
-    for i, rel_doc in enumerate(relevant_documents):
-        print_ww(f'## Document {i+1}: {rel_doc.page_content}.......')
-        print('---')
-    
-    answer = wrapper_store.query(question=query, llm=llm)
-    print_ww(answer)
-
-    return answer
-
-def get_answer_using_template(query, vectorstore, rag_type):
-    relevant_documents = vectorstore.similarity_search(query)
+def get_answer_using_template(query):
+    relevant_documents = retriever.get_relevant_documents(query)
 
     print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
     print('----')
@@ -197,7 +182,7 @@ def lambda_handler(event, context):
     body = event['body']
     print('body: ', body)
 
-    global modelId, llm, vectorstore, enableRAG, rag_type
+    global modelId, llm, vectorstore, rag_type
     
     modelId = load_configuration(userId)
     if(modelId==""): 
@@ -242,13 +227,10 @@ def lambda_handler(event, context):
 
     else:             
         if type == 'text':
-            print('enableRAG: ', enableRAG)
             text = body
-            if enableRAG==False:                
-                msg = llm(text)
-            else:
-                msg = get_answer_using_query(text, vectorstore, rag_type)
-                print('msg1: ', msg)
+            # msg = llm(text)
+            msg = get_answer_using_template(text)
+            print('msg1: ', msg)
             
         elif type == 'document':
             object = body
@@ -259,18 +241,13 @@ def lambda_handler(event, context):
             # load documents where text, pdf, csv are supported
             docs = load_document(file_type, object)
 
-            # Kendra                        
-            if enableRAG==False: 
-                enableRAG = True
+            # retriever.get_relevant_documents("what is langchain")
                     
             # summerization
             query = "summerize the documents"
-            #msg = get_answer_using_query(query, vectorstore, rag_type)
+            #msg = get_answer_using_template(query)
             #print('msg1: ', msg)
 
-            msg = get_answer_using_template(query, vectorstore, rag_type)
-            print('msg2: ', msg)
-                
         elapsed_time = int(time.time()) - start
         print("total run time(sec): ", elapsed_time)
 
