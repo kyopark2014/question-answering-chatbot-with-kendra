@@ -131,7 +131,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       }),
     );         
     roleLambda.attachInlinePolicy( // add kendra policy
-      new iam.Policy(this, `bedrock-policy-for-${projectName}`, {
+      new iam.Policy(this, `kendra-policy-for-${projectName}`, {
         statements: [KendraPolicy],
       }),
     );  
