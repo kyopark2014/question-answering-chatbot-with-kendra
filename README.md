@@ -47,7 +47,7 @@ Kendra를 위한 trust policy는 아래와 같이 설정합니다.
         "iam:PassRole"
     ],
     "Resource": [
-        "arn:aws:iam::*:role/service-role/AmazonSageMakerServiceCatalogProductsUse*"
+        "arn:aws:iam::[account-id]:role/role-lambda-chat-for-chatbot-with-kendra",
     ],
     "Effect": "Allow"
 }
