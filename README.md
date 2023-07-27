@@ -166,13 +166,25 @@ kendra.batch_put_document(
 )
 ```
 
-업로드한 문서 파일에 대한 요약(Summerization)을 제공하여 사용자의 파일에 대한 이해를 돕습니다.
+업로드한 문서 파일에 대한 정보를 사용자에게 보여주기 위하여 아래와 같이 요약(Summerization)을 수행합니다.
 
 ```python
-query = "summerize the documents"
+file_type = object[object.rfind('.') + 1: len(object)]
+print('file_type: ', file_type)
 
-msg = get_answer(query, vectorstore_new)
-print('msg2: ', msg)
+docs = load_document(file_type, object)
+prompt_template = """Write a concise summary of the following:
+
+{ text }
+                
+CONCISE SUMMARY """
+
+PROMPT = PromptTemplate(template = prompt_template, input_variables = ["text"])
+chain = load_summarize_chain(llm, chain_type = "stuff", prompt = PROMPT)
+summary = chain.run(docs)
+print('summary: ', summary)
+
+msg = summary
 ```
 
 
