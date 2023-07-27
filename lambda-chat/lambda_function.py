@@ -159,6 +159,7 @@ def load_document(file_type, s3_file_name):
               
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
+    print('length of relevant_documents: ', len(relevant_documents))
 
     if(len(relevant_documents)==0):
         return llm(query)
