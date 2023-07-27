@@ -53,6 +53,21 @@ Kendra를 위한 trust policy는 아래와 같이 설정합니다.
 }
 ```
 
+이를 [cdk-chatbot-with-kendra-stack.ts](./cdk-chatbot-with-kendra/lib/cdk-chatbot-with-kendra-stack.ts)에서는 아래와 같이 구현할 수 있습니다.
+
+```java
+const passRoleResourceArn = roleLambda.roleArn;
+const passRolePolicy = new iam.PolicyStatement({
+    resources: [passRoleResourceArn],
+    actions: ['iam:PassRole'],
+});
+roleLambda.attachInlinePolicy( // add kendra policy
+    new iam.Policy(this, `pass-role-of-kendra-for-${projectName}`, {
+        statements: [passRolePolicy],
+    }),
+);
+```  
+
 ### Bedrock을 LangChain으로 연결하기
 
 Bedrock 접속을 위해 필요한 region name과 endpoint url을 지정하고, LangChain을 사용할 수 있도록 연결하여 줍니다. Bedrock preview에서는 Dev/Prod 버전에 따라 endpoint를 달리하는데, Prod 버전을 사용하고자 할 경우에는 endpoint에 대한 부분을 삭제하거나 주석처리합니다.
