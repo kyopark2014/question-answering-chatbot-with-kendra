@@ -98,18 +98,18 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     const domainName = `os-${projectName}`
     const region = process.env.CDK_DEFAULT_REGION;
     const accountId = process.env.CDK_DEFAULT_ACCOUNT;
-    const resourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
-    //if(debug) {
+    const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
+    if(debug) {
       new cdk.CfnOutput(this, `resource-arn-of-kendra-for-${projectName}`, {
-        value: resourceArn,
+        value: kendraResourceArn,
         description: 'The arn of resource',
       }); 
-    //}
-    const KendraPolicy = new iam.PolicyStatement({  
-      resources: [resourceArn],      
+    }    
+    const kendraPolicy = new iam.PolicyStatement({  
+      resources: [kendraResourceArn],      
       actions: ['kendra:*'],
     });  
-
+      
     const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
       roleName: `role-lambda-chat-for-${projectName}`,
       assumedBy: new iam.CompositePrincipal(
@@ -132,10 +132,30 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     );         
     roleLambda.attachInlinePolicy( // add kendra policy
       new iam.Policy(this, `kendra-policy-for-${projectName}`, {
-        statements: [KendraPolicy],
+        statements: [kendraPolicy],
       }),
     );  
     
+    
+   
+    // arn:aws:iam::*:role/service-role/AmazonSageMakerServiceCatalogProductsUse*"
+    // Permission for "iam:PassRole"
+    const passRoleResourceArn = `arn:aws:iam::*|role/service-role/{roleLambda.roleId}*`
+    const passRolePolicy = new iam.PolicyStatement({  
+      resources: [passRoleResourceArn],      
+      actions: ['iam:PassRole'],
+    });
+    roleLambda.attachInlinePolicy( // add kendra policy
+      new iam.Policy(this, `pass-role-of-kendra-for-${projectName}`, {
+        statements: [passRolePolicy],
+      }),
+    ); 
+    
+    new cdk.CfnOutput(this, `passRole-resource-arn-of-kendra-for-${projectName}`, {
+      value: passRoleResourceArn,
+      description: 'The arn of pass role',
+    }); 
+
     // Lambda for chat using langchain (container)
     const lambdaChatApi = new lambda.DockerImageFunction(this, `lambda-chat-for-${projectName}`, {
       description: 'lambda for chat api',
