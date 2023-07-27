@@ -52,8 +52,38 @@ const configDataTable = new dynamodb.Table(this, `dynamodb-configuration-for-${p
 ```
 
 
+아래와 같이 Kendra를 위한 IAM Role을 정의합니다.
 
+```java
+const region = process.env.CDK_DEFAULT_REGION;
+const accountId = process.env.CDK_DEFAULT_ACCOUNT;
+const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
+const kendraPolicy = new iam.PolicyStatement({
+    resources: [kendraResourceArn],
+    actions: ['kendra:*'],
+});
+const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
+    roleName: `role-kendra-for-${projectName}`,
+    assumedBy: new iam.CompositePrincipal(
+        new iam.ServicePrincipal("kendra.amazonaws.com")
+    )
+});
+roleKendra.attachInlinePolicy( // add kendra policy
+    new iam.Policy(this, `kendra-inline-policy-for-${projectName}`, {
+        statements: [kendraPolicy],
+    }),
+);
+```
 
+이제 아래와 같이 kendra index를 설치합니다.
+
+```java
+const cfnIndex = new kendra.CfnIndex(this, 'MyCfnIndex', {
+    edition: 'DEVELOPER_EDITION',  // ENTERPRISE_EDITION
+    name: `reg-kendra-${projectName}`,
+    roleArn: roleKendra.roleArn,
+});
+```
 
 
 Bedrock 사용에 필요한 IAM Role을 생성합니다. Principal로 "bedrock.amazonaws.com"을 추가하였고, Policy로 action에 "bedrock:*"을 허용하였습니다.
