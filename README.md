@@ -39,6 +39,20 @@ Kendra를 위한 trust policy는 아래와 같이 설정합니다.
 }
 ```
 
+[Troubleshooting Amazon Kendra Identity and Access](https://docs.aws.amazon.com/kendra/latest/dg/security_iam_troubleshoot.html)와 같아 Kendra는 "iam:PassRole"을 포함하여야 합니다. 
+
+```java
+{
+    "Action": [
+        "iam:PassRole"
+    ],
+    "Resource": [
+        "arn:aws:iam::*:role/service-role/AmazonSageMakerServiceCatalogProductsUse*"
+    ],
+    "Effect": "Allow"
+}
+```
+
 ### Bedrock을 LangChain으로 연결하기
 
 Bedrock 접속을 위해 필요한 region name과 endpoint url을 지정하고, LangChain을 사용할 수 있도록 연결하여 줍니다. Bedrock preview에서는 Dev/Prod 버전에 따라 endpoint를 달리하는데, Prod 버전을 사용하고자 할 경우에는 endpoint에 대한 부분을 삭제하거나 주석처리합니다.
