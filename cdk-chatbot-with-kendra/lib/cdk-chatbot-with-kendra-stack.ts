@@ -95,7 +95,23 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'The domain name of the Distribution',
     });
 
-    // Kendra
+    // Kendra    
+    const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
+      roleName: `role-kendra-for-${projectName}`,
+      assumedBy: new iam.CompositePrincipal(
+        new iam.ServicePrincipal("kendra.amazonaws.com")
+      )
+    });
+    const cfnIndex = new kendra.CfnIndex(this, 'MyCfnIndex', {
+      edition: 'DEVELOPER_EDITION',  // ENTERPRISE_EDITION
+      name: `reg-kendra-${projectName}`,
+      roleArn: roleKendra.roleArn,
+    });     
+    new cdk.CfnOutput(this, `index-of-kendra-for-${projectName}`, {
+      value: cfnIndex.attrId,
+      description: 'The index of kendra',
+    }); 
+
     const region = process.env.CDK_DEFAULT_REGION;
     const accountId = process.env.CDK_DEFAULT_ACCOUNT;
     const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
@@ -110,22 +126,12 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       actions: ['kendra:*'],
     });  
     
-    const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
-      roleName: `role-kendra-for-${projectName}`,
-      assumedBy: new iam.CompositePrincipal(
-        new iam.ServicePrincipal("kendra.amazonaws.com")
-      )
-    });
     roleKendra.attachInlinePolicy( // add kendra policy
       new iam.Policy(this, `kendra-inline-policy-for-${projectName}`, {
         statements: [kendraPolicy],
       }),
     );  
-    const cfnIndex = new kendra.CfnIndex(this, 'MyCfnIndex', {
-      edition: 'DEVELOPER_EDITION',  // ENTERPRISE_EDITION
-      name: `reg-kendra-${projectName}`,
-      roleArn: roleKendra.roleArn,
-    });     
+    
       
     const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
       roleName: `role-lambda-chat-for-${projectName}`,
