@@ -2,7 +2,6 @@
 
 여기서는 [cdk-chatbot-with-kendra-stack.ts](./lib/cdk-chatbot-with-kendra-stack.ts)에 대하여 설명합니다.
 
-
 아래와 같이 S3를 project name을 이용하여 생성합니다. 외부에서 직접 접속은 보안을 위해 막고 편의상 프로젝트 종료로 인프라 삭제시 동시에 삭제되도록 하였습니다.
 
 ```java
@@ -52,61 +51,9 @@ const configDataTable = new dynamodb.Table(this, `dynamodb-configuration-for-${p
 });
 ```
 
-OpenSearch를 위한 Policy와 Access Policy를 아래와 같이 정의합니다.
-
-```java
-const domainName = `os-${projectName}`
-const region = process.env.CDK_DEFAULT_REGION;
-const accountId = process.env.CDK_DEFAULT_ACCOUNT;
-const resourceArn = `arn:aws:es:${region}:${accountId}:domain/${domainName}/*`
 
 
-const OpenSearchPolicy = new iam.PolicyStatement({
-    resources: [resourceArn],
-    actions: ['es:*'],
-});
-const OpenSearchAccessPolicy = new iam.PolicyStatement({
-    resources: [resourceArn],
-    actions: ['es:*'],
-    effect: iam.Effect.ALLOW,
-    principals: [new iam.AnyPrincipal()],
-});  
-```
 
-OpenSearch에 대해 아래와 같이 정의합니다.
-
-```java
-const domain = new opensearch.Domain(this, 'Domain', {
-    version: opensearch.EngineVersion.OPENSEARCH_2_3,
-
-    domainName: domainName,
-    removalPolicy: cdk.RemovalPolicy.DESTROY,
-    enforceHttps: true,
-    fineGrainedAccessControl: {
-        masterUserName: opensearch_account,
-        masterUserPassword: cdk.SecretValue.unsafePlainText(opensearch_passwd)
-    },
-    capacity: {
-        masterNodes: 3,
-        masterNodeInstanceType: 'm6g.large.search',
-        dataNodes: 3,
-        dataNodeInstanceType: 'r6g.large.search',
-    },
-    accessPolicies: [OpenSearchAccessPolicy],
-    ebs: {
-        volumeSize: 100,
-        volumeType: ec2.EbsDeviceVolumeType.GENERAL_PURPOSE_SSD,
-    },
-    nodeToNodeEncryption: true,
-    encryptionAtRest: {
-        enabled: true,
-    },
-    zoneAwareness: {
-        enabled: true,
-        availabilityZoneCount: 3,
-    }
-});
-```
 
 
 Bedrock 사용에 필요한 IAM Role을 생성합니다. Principal로 "bedrock.amazonaws.com"을 추가하였고, Policy로 action에 "bedrock:*"을 허용하였습니다.
@@ -117,18 +64,24 @@ const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
     assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal("lambda.amazonaws.com"),
         new iam.ServicePrincipal("bedrock.amazonaws.com"),
+        new iam.ServicePrincipal("kendra.amazonaws.com")
     )
 });
 roleLambda.addManagedPolicy({
     managedPolicyArn: 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole',
 });
-const BedrockPolicy = new iam.PolicyStatement({  // policy statement for sagemaker
+const BedrockPolicy = new iam.PolicyStatement({
     resources: ['*'],
     actions: ['bedrock:*'],
 });
 roleLambda.attachInlinePolicy( // add bedrock policy
-    new iam.Policy(this, `bedrock-policy-lambda-chat-for-${projectName}`, {
+    new iam.Policy(this, `lambda-inline-policy-for-bedrock-in-${projectName}`, {
         statements: [BedrockPolicy],
+    }),
+);
+roleLambda.attachInlinePolicy( // add kendra policy
+    new iam.Policy(this, `lambda-inline-policy-for-kendra-in-${projectName}`, {
+        statements: [kendraPolicy],
     }),
 );      
 ```
@@ -150,7 +103,9 @@ const lambdaChatApi = new lambda.DockerImageFunction(this, `lambda-chat-for-${pr
         s3_bucket: s3Bucket.bucketName,
         s3_prefix: s3_prefix,
         callLogTableName: callLogTableName,
-        configTableName: configTableName
+        configTableName: configTableName,
+        kendraIndex: kendraIndex,
+        roleArn: roleLambda.roleArn
     }
 });
 lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));
