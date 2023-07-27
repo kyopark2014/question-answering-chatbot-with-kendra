@@ -117,7 +117,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       )
     });
     roleKendra.attachInlinePolicy( // add kendra policy
-      new iam.Policy(this, `kendra-policy-for-${projectName}`, {
+      new iam.Policy(this, `kendra-inline-policy-for-${projectName}`, {
         statements: [kendraPolicy],
       }),
     );  
@@ -143,12 +143,12 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       actions: ['bedrock:*'],
     });        
     roleLambda.attachInlinePolicy( // add bedrock policy
-      new iam.Policy(this, `bedrock-policy-for-${projectName}`, {
+      new iam.Policy(this, `lambda-inline-policy-for-bedrock-in-${projectName}`, {
         statements: [BedrockPolicy],
       }),
     );         
     roleLambda.attachInlinePolicy( // add kendra policy
-      new iam.Policy(this, `kendra-policy-for-${projectName}`, {
+      new iam.Policy(this, `lambda-inline-policy-for-kendra-in-${projectName}`, {
         statements: [kendraPolicy],
       }),
     );  
