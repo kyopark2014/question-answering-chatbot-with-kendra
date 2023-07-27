@@ -94,8 +94,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'The domain name of the Distribution',
     });
 
-    /*
-
     // Permission for Kendra
     const domainName = `os-${projectName}`
     const region = process.env.CDK_DEFAULT_REGION;
@@ -307,6 +305,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
       allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,  
       viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    });    */
+    });    
   }
 }
