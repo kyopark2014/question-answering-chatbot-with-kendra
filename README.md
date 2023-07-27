@@ -10,7 +10,7 @@
 
 ### IAM Role
 
-IAM Role에 아래와 같은 Permission을 추가합니다.
+IAM Role에 아래와 같은 Permission을 추가해야 합니다.
 
 ```java
 {
@@ -20,6 +20,30 @@ IAM Role에 아래와 같은 Permission을 추가합니다.
     ],
     "Resource": "arn:aws:kendra:[your-region]:[your-account-id]:index/[index-id]"
 }]
+```
+
+이를 [cdk-chatbot-with-kendra-stack.ts](./cdk-chatbot-with-kendra/lib/cdk-chatbot-with-kendra-stack.ts)에서는 아래와 구현할 수 있습니다.
+
+```java
+const region = process.env.CDK_DEFAULT_REGION;
+const accountId = process.env.CDK_DEFAULT_ACCOUNT;
+const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
+if (debug) {
+    new cdk.CfnOutput(this, `resource-arn-of-kendra-for-${projectName}`, {
+        value: kendraResourceArn,
+        description: 'The arn of resource',
+    });
+}
+const kendraPolicy = new iam.PolicyStatement({
+    resources: [kendraResourceArn],
+    actions: ['kendra:*'],
+});
+
+roleLambda.attachInlinePolicy( // add kendra policy
+    new iam.Policy(this, `kendra-policy-for-${projectName}`, {
+        statements: [kendraPolicy],
+    }),
+);  
 ```
 
 Kendra를 위한 trust policy는 아래와 같이 설정합니다.
@@ -37,6 +61,19 @@ Kendra를 위한 trust policy는 아래와 같이 설정합니다.
       }
    ]
 }
+```
+
+따라서, [cdk-chatbot-with-kendra-stack.ts](./cdk-chatbot-with-kendra/lib/cdk-chatbot-with-kendra-stack.ts)와 같이 "kendra.amazonaws.com"을 추가합니다.
+
+```java
+const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
+    roleName: `role-lambda-chat-for-${projectName}`,
+    assumedBy: new iam.CompositePrincipal(
+        new iam.ServicePrincipal("lambda.amazonaws.com"),
+        new iam.ServicePrincipal("bedrock.amazonaws.com"),
+        new iam.ServicePrincipal("kendra.amazonaws.com")
+    )
+});
 ```
 
 [Troubleshooting Amazon Kendra Identity and Access](https://docs.aws.amazon.com/kendra/latest/dg/security_iam_troubleshoot.html)와 같아 Kendra는 "iam:PassRole"을 포함하여야 합니다. 
