@@ -142,17 +142,28 @@ bedrock_embeddings = BedrockEmbeddings(client=boto3_bedrock)
 
 ### 문서 등록
 
-문서를 업로드하면 vector store에 저장합니다. 파일을 여러번 업로드할 경우에는 기존 vector store에 추가합니다. 
+S3에 저장된 문서를 kendra로 전달하기 위하여, 아래와 같이 문서에 대한 S3 정보를 kendra의 [batch_put_document()](https://docs.aws.amazon.com/kendra/latest/APIReference/API_BatchPutDocument.html)을 이용하여 전달합니다. 
 
 ```python
-docs = load_document(file_type, object)
+documentInfo = {
+    "S3Path": {
+        "Bucket": s3_bucket,
+        "Key": s3_prefix+'/'+s3_file_name
+    },
+    "Title": "Document from client",
+    "Id": requestId
+}
 
-vectorstore_new = FAISS.from_documents(
-    docs,
-    bedrock_embeddings,
+documents = [
+    documentInfo
+]
+
+kendra = boto3.client("kendra")
+kendra.batch_put_document(
+    Documents = documents,
+    IndexId = kendraIndex,
+    RoleArn = roleArn
 )
-
-vectorstore.merge_from(vectorstore_new)
 ```
 
 업로드한 문서 파일에 대한 요약(Summerization)을 제공하여 사용자의 파일에 대한 이해를 돕습니다.
