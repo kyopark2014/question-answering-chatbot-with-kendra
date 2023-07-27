@@ -20,7 +20,6 @@ const endpoint_url = "https://prod.us-west-2.frontend.bedrock.aws.dev";
 const model_id = "amazon.titan-tg1-large"; // amazon.titan-e1t-medium, anthropic.claude-v1
 const projectName = "chatbot-with-kendra";
 const bucketName = `storage-for-${projectName}`;
-//const kendraIndex = "50a29d7f-f091-4340-a2cd-fa62f4752e92";
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -96,7 +95,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     });
 
     // Kendra    
-/*    const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
+    const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
       roleName: `role-kendra-for-${projectName}`,
       assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal("kendra.amazonaws.com")
@@ -322,6 +321,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
       allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,  
       viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    });    */
+    });    
   }
 }
