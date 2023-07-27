@@ -20,7 +20,6 @@ const model_id = "amazon.titan-tg1-large"; // amazon.titan-e1t-medium, anthropic
 const projectName = "chatbot-with-kendra";
 const bucketName = `storage-for-${projectName}`;
 const kendraIndex = "50a29d7f-f091-4340-a2cd-fa62f4752e92";
-//arn:aws:kendra:ap-northeast-1:677146750822:index/50a29d7f-f091-4340-a2cd-fa62f4752e92
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -95,11 +94,28 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'The domain name of the Distribution',
     });
 
+    // Permission for Kendra
+    const domainName = `os-${projectName}`
+    const region = process.env.CDK_DEFAULT_REGION;
+    const accountId = process.env.CDK_DEFAULT_ACCOUNT;
+    const resourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
+    //if(debug) {
+      new cdk.CfnOutput(this, `resource-arn-of-kendra-for-${projectName}`, {
+        value: resourceArn,
+        description: 'The arn of resource',
+      }); 
+    //}
+    const KendraPolicy = new iam.PolicyStatement({  
+      resources: [resourceArn],      
+      actions: ['kendra:*'],
+    });  
+
     const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
       roleName: `role-lambda-chat-for-${projectName}`,
       assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal("lambda.amazonaws.com"),
         new iam.ServicePrincipal("bedrock.amazonaws.com"),
+        new iam.ServicePrincipal("kendra.amazonaws.com")
       )
     });
     roleLambda.addManagedPolicy({
@@ -114,6 +130,11 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         statements: [BedrockPolicy],
       }),
     );         
+    roleLambda.attachInlinePolicy( // add kendra policy
+      new iam.Policy(this, `bedrock-policy-for-${projectName}`, {
+        statements: [KendraPolicy],
+      }),
+    );  
     
     // Lambda for chat using langchain (container)
     const lambdaChatApi = new lambda.DockerImageFunction(this, `lambda-chat-for-${projectName}`, {
