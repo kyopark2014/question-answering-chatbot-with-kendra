@@ -138,8 +138,6 @@ bedrock_embeddings = BedrockEmbeddings(client=boto3_bedrock)
 
 ### Kendra
 
-
-
 ### 문서 등록
 
 S3에 저장된 문서를 kendra로 전달하기 위하여, 아래와 같이 문서에 대한 S3 정보를 kendra의 [batch_put_document()](https://docs.aws.amazon.com/kendra/latest/APIReference/API_BatchPutDocument.html)을 이용하여 전달합니다. 
@@ -190,42 +188,34 @@ msg = summary
 
 ### Question/Answering
 
-#### Template를 이용하는 방법
-
-일반적으로 vectorstore에서 query를 이용하는 방법보다 나은 결과를 얻습니다.
+사용자가 채팅창에서 메시지를 입력할때 발생한 메시지는 아래처럼 query로 전달되고, [Kendra Retriever](https://python.langchain.com/docs/integrations/retrievers/amazon_kendra_retriever)를 이용하여 get_relevant_documents()로 관련된 문장들을 kendra로부터 가져옵니다. 이때 가져온 문장이 없다면 bedrock의 llm()을 이용하여 결과를 얻고, kendra에 관련된 데이터가 있다면 아래와 같이 template을 이용하여 [RetrievalQA](https://python.langchain.com/docs/modules/chains/popular/vector_db_qa)로 query에 대한 응답을 구하여 결과로 전달합니다.
 
 ```python
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
+relevant_documents = retriever.get_relevant_documents(query)
 
-query_embedding = vectorstore.embedding_function(query)
-relevant_documents = vectorstore.similarity_search_by_vector(query_embedding)
-
-    from langchain.chains import RetrievalQA
-    from langchain.prompts import PromptTemplate
-
+if (len(relevant_documents) == 0):
+    return llm(query)
+else:
     prompt_template = """Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
-{ context }
+    { context }
 
-Question: { question }
-Assistant: """
-PROMPT = PromptTemplate(
-    template = prompt_template, input_variables = ["context", "question"]
-)
+    Question: { question }
+    Assistant: """
+    PROMPT = PromptTemplate(
+        template = prompt_template, input_variables = ["context", "question"]
+    )
 
-qa = RetrievalQA.from_chain_type(
-    llm = llm,
-    chain_type = "stuff",
-    retriever = vectorstore.as_retriever(
-        search_type = "similarity", search_kwargs = { "k": 3 }
-    ),
-    return_source_documents = True,
-    chain_type_kwargs = { "prompt": PROMPT }
-)
-result = qa({ "query": query })
+    qa = RetrievalQA.from_chain_type(
+        llm = llm,
+        chain_type = "stuff",
+        retriever = retriever,
+        return_source_documents = True,
+        chain_type_kwargs = { "prompt": PROMPT }
+    )
+    result = qa({ "query": query })
 
-return result['result']
+    return result['result']
 ```
 
 ## 실습하기
