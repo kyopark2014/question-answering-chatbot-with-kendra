@@ -95,7 +95,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     });
 
     // Permission for Kendra
-    const domainName = `os-${projectName}`
     const region = process.env.CDK_DEFAULT_REGION;
     const accountId = process.env.CDK_DEFAULT_ACCOUNT;
     const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
@@ -136,15 +135,12 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       }),
     );  
    
-    // arn:aws:iam::*:role/service-role/AmazonSageMakerServiceCatalogProductsUse*"
-    // Permission for "iam:PassRole"
-    // const passRoleResourceArn = `arn:aws:iam::*:role/service-role/${roleLambda.roleName}*`
     const passRoleResourceArn = roleLambda.roleArn;
     const passRolePolicy = new iam.PolicyStatement({  
       resources: [passRoleResourceArn],      
       actions: ['iam:PassRole'],
     });
-    roleLambda.attachInlinePolicy( // add kendra policy
+    roleLambda.attachInlinePolicy( // add pass role policy
       new iam.Policy(this, `pass-role-of-kendra-for-${projectName}`, {
         statements: [passRolePolicy],
       }), 
