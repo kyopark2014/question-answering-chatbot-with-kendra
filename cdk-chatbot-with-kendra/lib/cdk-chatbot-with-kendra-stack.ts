@@ -141,7 +141,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     // arn:aws:iam::*:role/service-role/AmazonSageMakerServiceCatalogProductsUse*"
     // Permission for "iam:PassRole"
     const passRoleResourceArn = `arn:aws:iam::*|role/service-role/{roleLambda.roleId}*`
-    const passRolePolicy = new iam.PolicyStatement({  
+  /*  const passRolePolicy = new iam.PolicyStatement({  
       resources: [passRoleResourceArn],      
       actions: ['iam:PassRole'],
     });
@@ -149,7 +149,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       new iam.Policy(this, `pass-role-of-kendra-for-${projectName}`, {
         statements: [passRolePolicy],
       }),
-    ); 
+    );  */
     
     new cdk.CfnOutput(this, `passRole-resource-arn-of-kendra-for-${projectName}`, {
       value: passRoleResourceArn,
