@@ -126,16 +126,6 @@ modelId = 'amazon.titan-tg1-large'  # anthropic.claude-v1
 llm = Bedrock(model_id=modelId, client=boto3_bedrock)    
 ```
 
-
-### Embedding
-
-BedrockEmbeddings을 이용하여 Embedding을 합니다.
-
-```python
-from langchain.embeddings import BedrockEmbeddings
-bedrock_embeddings = BedrockEmbeddings(client=boto3_bedrock)
-```
-
 ### Kendra
 
 ### 문서 등록
