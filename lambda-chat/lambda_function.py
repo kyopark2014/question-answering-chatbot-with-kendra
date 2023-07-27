@@ -1,29 +1,19 @@
-import json
 import boto3
+import json
+import datetime
+import sys
 import os
 import time
-import datetime
-from io import BytesIO
 import PyPDF2
 import csv
-import sys
+from io import BytesIO
 
-from langchain import PromptTemplate, SagemakerEndpoint
-from langchain.llms.sagemaker_endpoint import LLMContentHandler
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.llms.bedrock import Bedrock
+from langchain import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
-
-from langchain.agents import create_csv_agent
-from langchain.agents.agent_types import AgentType
-from langchain.llms.bedrock import Bedrock
-from langchain.chains.question_answering import load_qa_chain
-
-from langchain.indexes import VectorstoreIndexCreator
 from langchain.document_loaders import CSVLoader
-from langchain.embeddings import BedrockEmbeddings
-from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.retrievers import AmazonKendraRetriever
@@ -44,6 +34,24 @@ kendraIndex = os.environ.get('kendraIndex')
 roleArn = os.environ.get('roleArn')
 modelId = os.environ.get('model_id')
 print('model_id: ', modelId)
+
+# Bedrock Contiguration
+bedrock_region = bedrock_region
+bedrock_config = {
+    "region_name":bedrock_region,
+    "endpoint_url":endpoint_url
+}
+    
+boto3_bedrock = bedrock.get_bedrock_client(
+    region=bedrock_config["region_name"],
+    url_override=bedrock_config["endpoint_url"])
+    
+modelInfo = boto3_bedrock.list_foundation_models()    
+print('models: ', modelInfo)
+
+llm = Bedrock(model_id=modelId, client=boto3_bedrock)
+
+retriever = AmazonKendraRetriever(index_id=kendraIndex)
 
 def save_configuration(userId, modelId):
     item = {
@@ -78,25 +86,6 @@ def load_configuration(userId):
         save_configuration(userId, modelId)
 
         return modelId
-
-# Bedrock Contiguration
-bedrock_region = bedrock_region
-bedrock_config = {
-    "region_name":bedrock_region,
-    "endpoint_url":endpoint_url
-}
-    
-# supported llm list from bedrock
-boto3_bedrock = bedrock.get_bedrock_client(
-    region=bedrock_config["region_name"],
-    url_override=bedrock_config["endpoint_url"])
-    
-modelInfo = boto3_bedrock.list_foundation_models()    
-print('models: ', modelInfo)
-
-llm = Bedrock(model_id=modelId, client=boto3_bedrock)
-
-retriever = AmazonKendraRetriever(index_id=kendraIndex)
 
 # store document into Kendra
 def store_document(s3_file_name, requestId):
