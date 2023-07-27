@@ -131,7 +131,8 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         s3_prefix: s3_prefix,
         callLogTableName: callLogTableName,
         configTableName: configTableName,
-        kendraIndex: kendraIndex
+        kendraIndex: kendraIndex,
+        roleArn: roleLambda.roleArn
       }
     });     
     lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  

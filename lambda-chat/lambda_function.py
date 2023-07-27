@@ -41,6 +41,7 @@ endpoint_url = os.environ.get('endpoint_url')
 bedrock_region = os.environ.get('bedrock_region')
 rag_type = os.environ.get('rag_type')
 kendraIndex = os.environ.get('kendraIndex')
+roleArn = os.environ.get('roleArn')
 modelId = os.environ.get('model_id')
 print('model_id: ', modelId)
 
@@ -96,6 +97,29 @@ print('models: ', modelInfo)
 llm = Bedrock(model_id=modelId, client=boto3_bedrock)
 
 retriever = AmazonKendraRetriever(index_id=kendraIndex)
+
+# store document into Kendra
+def store_document(s3_file_name, requestId):
+    documentInfo = {
+        "S3Path": {
+            "Bucket": s3_bucket,
+            "Key": s3_prefix+'/'+s3_file_name
+        },
+        "Title": "Document from client",
+        "Id": requestId
+    }
+
+    documents = [
+        documentInfo
+    ]
+
+    kendra = boto3.client("kendra")
+    result = kendra.batch_put_document(
+        Documents = documents,
+        IndexId = kendraIndex,
+        RoleArn = roleArn
+    )
+    print(result)
 
 # load documents from s3
 def load_document(file_type, s3_file_name):
@@ -158,9 +182,7 @@ def get_answer_using_template(query):
         qa = RetrievalQA.from_chain_type(
             llm=llm,
             chain_type="stuff",
-            retriever=vectorstore.as_retriever(
-                search_type="similarity", search_kwargs={"k": 3}
-            ),
+            retriever=retriever,
             return_source_documents=True,
             chain_type_kwargs={"prompt": PROMPT}
         )
@@ -229,39 +251,34 @@ def lambda_handler(event, context):
         if type == 'text':
             text = body
             msg = get_answer_using_template(text)
-            print('msg1: ', msg)
+            print('msg: ', msg)
             
         elif type == 'document':
             object = body
-        
+                    
+            # stor the object into kendra
+            store_document(object, requestId)
+
+            # summerization to show the document
             file_type = object[object.rfind('.')+1:len(object)]
             print('file_type: ', file_type)
             
-            # load documents where text, pdf, csv are supported
             docs = load_document(file_type, object)
+            prompt_template = """Write a concise summary of the following:
 
-            kendra = boto3.client("kendra")
+            {text}
+                
+            CONCISE SUMMARY """
 
-            result = kendra.batch_put_document(
-                IndexId = kendraIndex,
-                Documents = docs
-            )
+            PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
+            chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
+            summary = chain.run(docs)
+            print('summary: ', summary)
 
-            print(result)
-
-            msg = result
-
-            # retriever.get_relevant_documents("what is langchain")
-                    
-            # summerization
-            query = "summerize the documents"
-            #msg = get_answer_using_template(query)
-            #print('msg1: ', msg)
+            msg = summary
 
         elapsed_time = int(time.time()) - start
         print("total run time(sec): ", elapsed_time)
-
-        print('msg: ', msg)
 
         item = {
             'user-id': {'S':userId},
