@@ -10,7 +10,7 @@
 
 ### IAM Role
 
-IAM Role에 아래와 같은 Permission을 추가해야 합니다.
+IAM Role에서 아래와 같이 kendra에 대한 Permission을 추가해야 합니다.
 
 ```java
 {
