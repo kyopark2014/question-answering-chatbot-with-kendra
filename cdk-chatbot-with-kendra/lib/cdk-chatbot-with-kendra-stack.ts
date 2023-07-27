@@ -96,7 +96,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     });
 
     // Kendra    
-    const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
+/*    const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
       roleName: `role-kendra-for-${projectName}`,
       assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal("kendra.amazonaws.com")
@@ -322,6 +322,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
       allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,  
       viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    });    
+    });    */
   }
 }
