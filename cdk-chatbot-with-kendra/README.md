@@ -1,6 +1,6 @@
 # CDK로 인프라 정의하기
 
-여기서는 [cdk-qa-with-rag-stack.ts](./lib/cdk-qa-with-rag-stack.ts)에 대하여 설명합니다.
+여기서는 [cdk-chatbot-with-kendra-stack.ts](./lib/cdk-chatbot-with-kendra-stack.ts)에 대하여 설명합니다.
 
 
 아래와 같이 S3를 project name을 이용하여 생성합니다. 외부에서 직접 접속은 보안을 위해 막고 편의상 프로젝트 종료로 인프라 삭제시 동시에 삭제되도록 하였습니다.
