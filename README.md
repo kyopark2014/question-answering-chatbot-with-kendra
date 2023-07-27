@@ -61,7 +61,7 @@ const passRolePolicy = new iam.PolicyStatement({
     resources: [passRoleResourceArn],
     actions: ['iam:PassRole'],
 });
-roleLambda.attachInlinePolicy( // add kendra policy
+roleLambda.attachInlinePolicy(
     new iam.Policy(this, `pass-role-of-kendra-for-${projectName}`, {
         statements: [passRolePolicy],
     }),
