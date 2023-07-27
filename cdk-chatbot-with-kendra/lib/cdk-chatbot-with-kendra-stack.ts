@@ -10,6 +10,7 @@ import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as apiGateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3Deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as kendra from 'aws-cdk-lib/aws-kendra';
 
 const debug = false;
 const stage = 'dev';
@@ -94,7 +95,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'The domain name of the Distribution',
     });
 
-    // Permission for Kendra
+    // Kendra
     const region = process.env.CDK_DEFAULT_REGION;
     const accountId = process.env.CDK_DEFAULT_ACCOUNT;
     const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${kendraIndex}`
@@ -103,11 +104,28 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         value: kendraResourceArn,
         description: 'The arn of resource',
       }); 
-    }    
+    }       
     const kendraPolicy = new iam.PolicyStatement({  
       resources: [kendraResourceArn],      
       actions: ['kendra:*'],
     });  
+    
+    const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
+      roleName: `role-kendra-for-${projectName}`,
+      assumedBy: new iam.CompositePrincipal(
+        new iam.ServicePrincipal("kendra.amazonaws.com")
+      )
+    });
+    roleKendra.attachInlinePolicy( // add kendra policy
+      new iam.Policy(this, `kendra-policy-for-${projectName}`, {
+        statements: [kendraPolicy],
+      }),
+    );  
+    const cfnIndex = new kendra.CfnIndex(this, 'MyCfnIndex', {
+      edition: 'DEVELOPER_EDITION',  // ENTERPRISE_EDITION
+      name: `reg-kendra-${projectName}`,
+      roleArn: roleKendra.roleArn,
+    });     
       
     const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
       roleName: `role-lambda-chat-for-${projectName}`,
