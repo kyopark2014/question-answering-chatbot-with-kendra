@@ -33,6 +33,16 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       autoDeleteObjects: true,
       publicReadAccess: false,
       versioned: false,
+      cors: [
+        {
+          allowedHeaders: ['*'],
+          allowedMethods: [
+            s3.HttpMethods.POST,
+            s3.HttpMethods.PUT,
+          ],
+          allowedOrigins: ['*'],
+        },
+      ],
     });
     if(debug) {
       new cdk.CfnOutput(this, 'bucketName', {
@@ -298,7 +308,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       integrationResponses: [{
         statusCode: '200',
       }], 
-      proxy:true, 
+      proxy:false, 
     }), {
       methodResponses: [  
         {
