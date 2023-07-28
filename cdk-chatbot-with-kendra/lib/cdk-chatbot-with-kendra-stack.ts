@@ -121,7 +121,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'The index of kendra',
     }); 
 
-    const region = process.env.CDK_DEFAULT_REGION;
+ /*   const region = process.env.CDK_DEFAULT_REGION;
     const accountId = process.env.CDK_DEFAULT_ACCOUNT;
     const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${cfnIndex.attrId}`
     if(debug) {
@@ -331,6 +331,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
       allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,  
       viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    });    
+    });    */
   }
 }
