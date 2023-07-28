@@ -210,7 +210,23 @@ attachFile.addEventListener('click', function(){
                     console.log("UploadURL: ", uploadURL);
 
                     var xmlHttp = new XMLHttpRequest();
+                    const url = new URL(uploadURL);
+                    console.log('url: ', url);
+                    
                     xmlHttp.open("PUT", uploadURL, true);       
+
+                    /*let params = JSON.stringify({
+                        'AWSAccessKeyId': '',
+                        'Content-Type': '',
+                        'Expires': '',
+                        'Signature': '',
+                        'X-Amzn-Trace-Id': '',
+                        'x-amz-security-token': ''
+                    });
+
+                    http.setRequestHeader("Content-type", "application/json; charset=utf-8");
+                    http.setRequestHeader("Content-length", params.length);
+                    http.setRequestHeader("Connection", "close"); */
 
                     let formData = new FormData();
                     formData.append("attachFile" , input.files[0]);
