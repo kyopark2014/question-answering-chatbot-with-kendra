@@ -1,7 +1,7 @@
 const aws = require('aws-sdk');
 
 const s3 = new aws.S3();
-aws.config.update({ region: "ap-northeast-1", signatureVersion: 'v4'});
+aws.config.update({ region: "ap-northeast-2", signatureVersion: 'v4'});
 
 const bucketName = process.env.bucketName;
 const s3_prefix = process.env.s3_prefix;
