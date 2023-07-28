@@ -277,11 +277,10 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'The web url of request for chat',
     });
 
-    if(debug) {
-      new cdk.CfnOutput(this, `UpdateCommend-for-${projectName}`, {
-        value: 'aws s3 cp ../html/chat.js '+'s3://'+s3Bucket.bucketName,
-        description: 'The url of web file upload',
-      });
+    new cdk.CfnOutput(this, `UpdateCommend-for-${projectName}`, {
+      value: 'aws s3 cp ../html/chat.js '+'s3://'+s3Bucket.bucketName,
+      description: 'The url of web file upload',
+    });
     }
 
     // Lambda - Upload
