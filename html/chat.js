@@ -212,21 +212,31 @@ attachFile.addEventListener('click', function(){
                     var xmlHttp = new XMLHttpRequest();
                     const url = new URL(uploadURL);
                     console.log('url: ', url);
-                    
-                    xmlHttp.open("PUT", uploadURL, true);       
 
-                    /*let params = JSON.stringify({
-                        'AWSAccessKeyId': '',
-                        'Content-Type': '',
-                        'Expires': '',
-                        'Signature': '',
-                        'X-Amzn-Trace-Id': '',
-                        'x-amz-security-token': ''
+                    const host = url.host;
+                    const pathname = url.pathname;
+                    const accessKeyId = url.searchParams.get('AWSAccessKeyId');
+                    const contentType = url.searchParams.get('Content-Type');
+                    const expires = url.searchParams.get('Expires');
+                    const signature = url.searchParams.get('Signature');
+                    const traceId = url.searchParams.get('X-Amzn-Trace-Id');
+                    const token = url.searchParams.get('x-amz-security-token');
+
+                    xmlHttp.open("PUT", host+pathname, true);       
+
+                    let params = JSON.stringify({
+                        'AWSAccessKeyId': accessKeyId,
+                        'Content-Type': contentType,
+                        'Expires': expires,
+                        'Signature': signature,
+                        'X-Amzn-Trace-Id': traceId,
+                        'x-amz-security-token': token
                     });
+                    console.log('params: ', params);
 
                     http.setRequestHeader("Content-type", "application/json; charset=utf-8");
                     http.setRequestHeader("Content-length", params.length);
-                    http.setRequestHeader("Connection", "close"); */
+                    http.setRequestHeader("Connection", "close"); 
 
                     let formData = new FormData();
                     formData.append("attachFile" , input.files[0]);
