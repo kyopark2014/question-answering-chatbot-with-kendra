@@ -249,7 +249,7 @@ attachFile.addEventListener('click', function(){
                             // summary for the upload file
                             sendRequestForSummary(filename);
                         }
-                        else if(xmlHttp.status != 200) {
+                        else if(xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status != 200) {
                             console.log('status' + xmlHttp.status);
                             alert("Try again! The request was failed.");
                         }
