@@ -206,7 +206,7 @@ attachFile.addEventListener('click', function(){
                     const body = JSON.parse(response.body);
                     console.log('body: ', body);
 
-                    const uploadURL = body.UploadURL;                    
+                    const uploadURL = decodeURI(body.UploadURL);                    
                     console.log("UploadURL: ", uploadURL);
 
                     var xmlHttp = new XMLHttpRequest();
