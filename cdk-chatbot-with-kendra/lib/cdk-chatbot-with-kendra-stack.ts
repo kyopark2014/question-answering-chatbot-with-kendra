@@ -281,7 +281,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       value: 'aws s3 cp ../html/chat.js '+'s3://'+s3Bucket.bucketName,
       description: 'The url of web file upload',
     });
-    }
 
     // Lambda - Upload
     const lambdaUpload = new lambda.Function(this, `lambda-upload-for-${projectName}`, {
