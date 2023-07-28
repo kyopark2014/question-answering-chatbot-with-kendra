@@ -210,7 +210,33 @@ attachFile.addEventListener('click', function(){
                     console.log("UploadURL: ", uploadURL);
 
                     var xmlHttp = new XMLHttpRequest();
-                    xmlHttp.open("PUT", uploadURL, true);       
+                    const url = new URL(uploadURL);
+                    // console.log('url: ', url);
+
+                    const host = url.host;
+                    const pathname = url.pathname;
+                    const accessKeyId = url.searchParams.get('AWSAccessKeyId');
+                    const contentType = url.searchParams.get('Content-Type');
+                    const expires = url.searchParams.get('Expires');
+                    const signature = url.searchParams.get('Signature');
+                    const traceId = url.searchParams.get('X-Amzn-Trace-Id');
+                    const token = url.searchParams.get('x-amz-security-token');
+
+                    xmlHttp.open('PUT', 'https://'+host+pathname);       
+
+                    let params = JSON.stringify({
+                        'AWSAccessKeyId': encodeURIComponent(accessKeyId),
+                        'Content-Type': encodeURIComponent(contentType),
+                        'Expires': encodeURIComponent(expires),
+                        'Signature': encodeURIComponent(signature),
+                        'X-Amzn-Trace-Id': encodeURIComponent(traceId),
+                        'x-amz-security-token': encodeURIComponent(token)
+                    });
+                    console.log('params: ', params);
+
+                    //xmlHttp.setRequestHeader("Content-type", "application/pdf; charset=utf-8");
+                    //xmlHttp.setRequestHeader("Content-length", params.length);
+                    //xmlHttp.setRequestHeader("Connection", "close"); 
 
                     let formData = new FormData();
                     formData.append("attachFile" , input.files[0]);
@@ -224,13 +250,15 @@ attachFile.addEventListener('click', function(){
                             sendRequestForSummary(filename);
                         }
                         else if(xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status != 200) {
-                            console.log('status' + xmlHttp.status);
-                            alert("Try again! The request was failed.");
+                            console.log('status: ', xmlHttp.status);
+                            console.log('statusText: ', xmlHttp.statusText);
+                            console.log('response:', xmlHttp.response)
+                            alert("Try again! The request was failed: "+xmlHttp.status);
                         }
                     };
         
                     xmlHttp.send(formData); 
-                    console.log(xmlHttp.responseText);
+                    console.log('response: ', xmlHttp.responseText);
                 }
             };
         
