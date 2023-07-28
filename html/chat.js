@@ -198,8 +198,6 @@ attachFile.addEventListener('click', function(){
                     response = JSON.parse(xhr.responseText);
                     console.log("response: " + JSON.stringify(response));
                     
-                    // addReceivedMessage(response.UploadURL)
-
                     // upload the file
                     const body = JSON.parse(response.body);
                     console.log('body: ', body);
@@ -234,7 +232,7 @@ attachFile.addEventListener('click', function(){
         
             var requestObj = {
                 "filename": filename,
-                "ext": contentType,
+                "contentType": contentType,
             }
             console.log("request: " + JSON.stringify(requestObj));
         
