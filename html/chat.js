@@ -206,7 +206,7 @@ attachFile.addEventListener('click', function(){
                     const body = JSON.parse(response.body);
                     console.log('body: ', body);
 
-                    const uploadURL = decodeURI(body.UploadURL);                    
+                    const uploadURL = body.UploadURL;                    
                     console.log("UploadURL: ", uploadURL);
 
                     var xmlHttp = new XMLHttpRequest();
@@ -302,4 +302,3 @@ function sendRequestForSummary(object) {
 
     xhr.send(blob);            
 }
-
