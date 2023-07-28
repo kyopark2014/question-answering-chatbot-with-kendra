@@ -20,6 +20,7 @@ exports.handler = async (event, context) => {
         Expires: URL_EXPIRATION_SECONDS,
         ContentType: contentType,
     }
+    console.log('s3Params: ', json.stringify(s3Params));
 
     const uploadURL = await s3.getSignedUrlPromise('putObject', s3Params);
     console.log('uploadURL: ', uploadURL);
