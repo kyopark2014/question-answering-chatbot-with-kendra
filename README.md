@@ -4,7 +4,7 @@
 
 전체적인 Architecture는 아래와 같습니다. 사용자가 파일을 업로드하면 Amazon S3에 저장된 후, kendra에 전달되어 symantic search에 활용되어집니다. 이후 사용자가 텍스트로 질문을 하면, CloudFront - API Gateway를 지나 [Lambda (chat)](./lambda-chat/lambda_function.py)에 텍스트가 전달됩니다. 이제 kendra를 통해 검색을 수행하여, 미리 입력한 문서중에서 가까운 문장을 얻습니다. 이후 Bedrock의 LLM을 이용하여 답변을 얻습니다. 답변은 DynamoDB에 call log의 형태로 저장되어 추후 각종 통계정보나 결과를 분석하는데에 이용될 수 있습니다. LLM은 Bedrock을 LangChain 형식의 API를 통해 구현하였고, Chatbot을 제공하는 인프라는 AWS CDK를 통해 배포합니다. 
 
-<img src="https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/863d78ed-0e3d-453b-977c-9b10f525b030" width="800">
+<img src="https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/e27d5831-91cc-44ce-ba6a-ff837b9f33c7" width="800">
 
 
 ## 주요 구성
