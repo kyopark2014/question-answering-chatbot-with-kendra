@@ -29,7 +29,6 @@ callLogTableName = os.environ.get('callLogTableName')
 configTableName = os.environ.get('configTableName')
 endpoint_url = os.environ.get('endpoint_url')
 bedrock_region = os.environ.get('bedrock_region')
-rag_type = os.environ.get('rag_type')
 kendraIndex = os.environ.get('kendraIndex')
 roleArn = os.environ.get('roleArn')
 modelId = os.environ.get('model_id')
@@ -194,7 +193,7 @@ def lambda_handler(event, context):
     body = event['body']
     print('body: ', body)
 
-    global modelId, llm, vectorstore, rag_type
+    global modelId, llm, kendra
     
     modelId = load_configuration(userId)
     if(modelId==""): 
