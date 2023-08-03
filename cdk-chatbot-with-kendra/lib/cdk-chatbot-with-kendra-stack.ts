@@ -187,7 +187,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'lambda for chat api',
       functionName: `lambda-chat-api-for-${projectName}`,
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lambda-chat')),
-      timeout: cdk.Duration.seconds(60),
+      timeout: cdk.Duration.seconds(600),
       memorySize: 4096,
       role: roleLambda,
       environment: {
