@@ -48,7 +48,14 @@ boto3_bedrock = bedrock.get_bedrock_client(
 modelInfo = boto3_bedrock.list_foundation_models()    
 print('models: ', modelInfo)
 
-llm = Bedrock(model_id=modelId, client=boto3_bedrock)
+parameters = {
+    "maxTokenCount":512,
+    "stopSequences":[],
+    "temperature":0,
+    "topP":0.9
+}
+
+llm = Bedrock(model_id=modelId, client=boto3_bedrock, model_kwargs=parameters)
 
 retriever = AmazonKendraRetriever(index_id=kendraIndex)
 
