@@ -112,7 +112,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       )
     });
     const cfnIndex = new kendra.CfnIndex(this, 'MyCfnIndex', {
-      edition: 'DEVELOPER_EDITION',  // ENTERPRISE_EDITION
+      edition: 'ENTERPRISE_EDITION',  // ENTERPRISE_EDITION, DEVELOPER_EDITION
       name: `reg-kendra-${projectName}`,
       roleArn: roleKendra.roleArn,
     });     
