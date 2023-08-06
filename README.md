@@ -244,6 +244,13 @@ else:
 
 일반적인 chatbot들은 지속적인 세션을 유지 관리하기 위해서는 websocket 등을 사용하지만, 여기서 사용한 Chatbot은 API를 테스트하기 위하여 RESTful API를 사용하고 있습니다. 따라서, LLM에서 응답이 일정시간(30초)이상 지연되는 경우에 브라우저에서 답변을 볼 수 없습니다. 따라서 긴 응답시간이 필요한 경우에 CloudWatch에서 [lambda-chat](./lambda-chat/lambda_function.py)의 로그를 확인하거나, DynamoDB에 저장된 call log를 확인합니다.
 
+## Troubleshooting
+
+### 1000자 이상의 query에 대한 Kendra 에러
+
+아래와 같이 1000자 이상의 query에 대하여 에러가 발생합니다. 현재 모든 text를 kendra에 먼저 질의하게 되어 있어서, 1000자이상의 질의를 어떻게 처리할지 고민이 필요합니다. 
+
+"An error occurred (ValidationException) when calling the Retrieve operation: The provided QueryText has a character count of 3630, which exceeds the limit. The character count must be less than or equal to 1000."
 
 ## Reference 
 
