@@ -44,8 +44,7 @@ cd question-answering-chatbot-with-kendra/cdk-chatbot-with-kendra/ && npm instal
 6) bedrock-sdk를 설치합니다.
 
 ```java
-cd ../lambda-chat && wget https://preview.documentation.bedrock.aws.dev/Documentation/SDK/bedrock-python-sdk.zip
-unzip bedrock-python-sdk.zip -d bedrock-sdk && python3 -m pip install -U ./bedrock-sdk/boto3-1.26.162-py3-none-any.whl -t . && python3 -m pip install -U ./bedrock-sdk/awscli-1.27.162-py3-none-any.whl -t . && cd ../cdk-chatbot-with-kendra/
+cd ../lambda-chat && wget https://db3lw8u6vdvwu.cloudfront.net/bedrock/bedrock-python-sdk.zip && unzip bedrock-python-sdk.zip -d bedrock-sdk && python3 -m pip install -U ./bedrock-sdk/boto3-1.26.162-py3-none-any.whl -t . && python3 -m pip install -U ./bedrock-sdk/awscli-1.27.162-py3-none-any.whl -t . && cd ../cdk-chatbot-with-kendra/
 ```
 
 6) CDK 사용을 위해 Boostraping을 수행합니다.
