@@ -260,6 +260,7 @@ else:
 
 [Quota: Characters displayed in the Document Excerpt of a Document type result](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-196E775D)
 
+검색의 길이 제한은 구글 검색도 동일하므로, 검색 길이의 제한은 피할 수 없습니다. 여기서는 1000자이상일 경우에는 RAG를 통해 검색하지 않도록 처리하였습니다. 
 
 ## Reference 
 
