@@ -151,6 +151,25 @@ def load_document(file_type, s3_file_name):
         ) for t in texts[:3]
     ]
     return docs
+
+def summerize_text(text):
+    docs = [
+        Document(
+            page_content=text
+        )
+    ]
+    prompt_template = """Write a concise summary of the following:
+
+    {text}
+                
+    CONCISE SUMMARY """
+
+    PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
+    chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
+    summary = chain.run(docs)
+    print('summarized text: ', summary)
+
+    return summary
               
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
@@ -246,7 +265,14 @@ def lambda_handler(event, context):
     else:             
         if type == 'text':
             text = body
-            msg = get_answer_using_template(text)
+            
+            querySize = len(text)
+            print('query size: ', querySize)
+
+            if querySize<1000: 
+                msg = get_answer_using_template(text)
+            else:
+                msg = llm(text)
             print('msg: ', msg)
             
         elif type == 'document':
