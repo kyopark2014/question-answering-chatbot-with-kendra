@@ -248,9 +248,16 @@ else:
 
 ### 1000자 이상의 query에 대한 Kendra 에러
 
-아래와 같이 1000자 이상의 query에 대하여 에러가 발생합니다. 현재 모든 text를 kendra에 먼저 질의하게 되어 있어서, 1000자이상의 질의를 어떻게 처리할지 고민이 필요합니다. 
+아래와 같이 1000자 이상의 query에 대하여 에러가 발생합니다.
 
 "An error occurred (ValidationException) when calling the Retrieve operation: The provided QueryText has a character count of 3630, which exceeds the limit. The character count must be less than or equal to 1000."
+
+이 경우에 첫번째 approach는 quota 증설 요청이 있을수 있습니다.
+
+[Quota: Characters in query text](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)
+
+[Quota: Characters displayed in the Document Excerpt of a Document type result](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-196E775D)
+
 
 ## Reference 
 
