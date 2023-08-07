@@ -254,7 +254,9 @@ else:
 
 이 경우에 첫번째 approach는 quota 증설 요청이 있을수 있습니다.
 
-[Quota: Characters in query text](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)
+[Quota: Characters in query text - us-east-1](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)
+
+[Quota: Characters in query text - tokyo](https://ap-northeast-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)
 
 [Quota: Characters displayed in the Document Excerpt of a Document type result](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-196E775D)
 
