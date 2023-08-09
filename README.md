@@ -246,8 +246,7 @@ else:
         return_source_documents = True,
         chain_type_kwargs = { "prompt": PROMPT }
     )
-    result = qa({ "query": query })
-    source_documents = result['source_documents']  
+    result = qa({ "query": query })     
 ```
 
 여기서 RetrievalQA을 이용한 Query시 얻어진 metadata의 형태는 아래와 같습니다.
@@ -266,6 +265,7 @@ def get_reference(docs):
         reference = reference + (str(page)+'page in '+name+'\n')
     return reference
 
+source_documents = result['source_documents'] 
 if len(source_documents)>=1:
     reference = get_reference(source_documents)
     return result['result']+reference
