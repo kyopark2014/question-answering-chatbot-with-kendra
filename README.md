@@ -221,6 +221,8 @@ msg = summary
 
 ### Question/Answering
 
+#### Kendra의 Query 길이 제한
+
 Kendra는 구글 검색처럼 Query할 수 있는 텍스트의 길이 제한이 있습니다. [Quota: Characters in query text - tokyo](https://ap-northeast-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)와 같이 기본값은 1000자입니다. Quota는 조정 가능하지만 일반적 질문으로 수천자를 사용하는 경우는 거의 없으므로 아래와 같이 1000자 이하의 질문만 Kenra를 통해 관련 문서를 조회하도록 합니다. 
 
 ```python
@@ -231,6 +233,8 @@ if querySize<1000:
 else:
     msg = llm(text)
 ```
+
+#### Prompt를 이용해 질문하기 
 
 아래와 같이 일정 길이 이하의 query는 [get_relevant_documents()](https://python.langchain.com/docs/modules/data_connection/retrievers/)을 이용하여 [Kendra Retriever](https://python.langchain.com/docs/integrations/retrievers/amazon_kendra_retriever)로 관련된 문장들을 가져옵니다. 이때 관련된 문장이 없다면 bedrock의 llm()을 이용하여 결과를 얻고, kendra에 관련된 데이터가 있다면 아래와 같이 template을 이용하여 [RetrievalQA](https://python.langchain.com/docs/modules/chains/popular/vector_db_qa)로 query에 대한 응답을 구하여 결과로 전달합니다.
 
@@ -259,6 +263,8 @@ else:
     )
     result = qa({ "query": query })     
 ```
+
+#### Metadata에서 Reference 추출하기 
 
 여기서 RetrievalQA을 이용한 Query시 얻어진 metadata의 형태는 아래와 같습니다.
 
