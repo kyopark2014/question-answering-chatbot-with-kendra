@@ -174,11 +174,8 @@ def summerize_text(text):
 def get_reference(docs):
     reference = "\n\nFrom\n"
     for doc in docs:
-        print('metadata: ', doc.metadata)
         name = doc.metadata['title']
-        print('name: ', name)
         page = doc.metadata['document_attributes']['_excerpt_page_number']
-        print('page: ', page)
     
         reference = reference + (str(page)+'page in '+name+'\n')
     return reference
