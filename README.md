@@ -197,7 +197,7 @@ kendra.batch_put_document(
 - 5 MB extracted text for any file
 
 
-업로드한 문서 파일에 대한 정보를 사용자에게 보여주기 위하여 아래와 같이 요약(Summerization)을 수행합니다.
+업로드한 문서 파일에 대한 정보를 사용자에게 보여주기 위하여 아래와 같이 [load_summarize_chain](https://python.langchain.com/docs/use_cases/summarization)을 이용하여 요약(Summerization)을 수행합니다.
 
 ```python
 file_type = object[object.rfind('.') + 1: len(object)]
