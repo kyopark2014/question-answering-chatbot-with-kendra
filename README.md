@@ -100,7 +100,7 @@ const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
 });
 ```
 
-[Troubleshooting Amazon Kendra Identity and Access](https://docs.aws.amazon.com/kendra/latest/dg/security_iam_troubleshoot.html)와 같아 Kendra는 "iam:PassRole"을 포함하여야 합니다. 
+[Troubleshooting Amazon Kendra Identity and Access](https://docs.aws.amazon.com/kendra/latest/dg/security_iam_troubleshoot.html)와 같이 Kendra는 "iam:PassRole"을 포함하여야 합니다. 
 
 ```java
 {
@@ -131,7 +131,7 @@ roleLambda.attachInlinePolicy(
 
 ### Bedrock을 LangChain으로 연결하기
 
-Bedrock 접속을 위해 필요한 region name과 endpoint url을 지정하고, LangChain을 사용할 수 있도록 연결하여 줍니다. Bedrock preview에서는 Dev/Prod 버전에 따라 endpoint를 달리하는데, Prod 버전을 사용하고자 할 경우에는 endpoint에 대한 부분을 삭제하거나 주석처리합니다.
+Bedrock 접속을 위해 필요한 region name과 endpoint url을 지정하고, LangChain을 사용할 수 있도록 연결하여 줍니다. 여기서 Bedrock은 aws 개발 계정과 preview 계정이 상이하게 설정합니다.
 
 ```python
 from langchain.llms.bedrock import Bedrock
@@ -142,13 +142,26 @@ bedrock_config = {
     "endpoint_url":"https://prod.us-west-2.frontend.bedrock.aws.dev"
 }
     
-boto3_bedrock = bedrock.get_bedrock_client(
-    region=bedrock_config["region_name"],
-    url_override=bedrock_config["endpoint_url"])
+if accessType=='aws':  # internal user of aws
+    boto3_bedrock = bedrock.get_bedrock_client(
+        region=bedrock_config["region_name"],
+        url_override=bedrock_config["endpoint_url"])
+else: # preview user
+    boto3_bedrock = bedrock.get_bedrock_client(
+        region=bedrock_config["region_name"])
+    
+modelInfo = boto3_bedrock.list_foundation_models()    
+print('models: ', modelInfo)
 
 modelId = 'amazon.titan-tg1-large'  # anthropic.claude-v1
 llm = Bedrock(model_id=modelId, client=boto3_bedrock)    
 ```
+
+접속에 대한 설정은 [cdk-chatbot-with-kendra-stack.ts](./cdk-chatbot-with-kendra/lib/cdk-chatbot-with-kendra-stack.ts)을 열어서 "accessType"을 아래와 같이 설정합니다. 
+
+![noname](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/152b94ee-e20f-4307-901f-d9c2e004c103)
+
+
 
 ### Kendra
 
