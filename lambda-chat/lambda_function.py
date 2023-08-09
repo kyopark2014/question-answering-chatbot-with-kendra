@@ -171,6 +171,18 @@ def summerize_text(text):
 
     return summary
               
+def get_reference(docs):
+    reference = "\n\nFrom\n"
+    for doc in docs:
+        print('metadata: ', doc.metadata)
+        name = doc.metadata['title']
+        print('name: ', name)
+        page = doc.metadata['document_attributes']['_excerpt_page_number']
+        print('page: ', page)
+    
+        reference = reference + (str(page)+'page in '+name+'\n')
+    return reference
+
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
     print('length of relevant_documents: ', len(relevant_documents))
@@ -203,11 +215,17 @@ def get_answer_using_template(query):
         )
         result = qa({"query": query})
         print('result: ', result)
-        
-        source_documents = result['source_documents']
-        print(source_documents)
 
-        return result['result']
+        source_documents = result['source_documents']        
+        print('source_documents: ', source_documents)
+
+        if len(source_documents)>=1:
+            reference = get_reference(source_documents)
+            print('reference: ', reference)
+
+            return result['result']+reference
+        else:
+            return result['result']
         
 def lambda_handler(event, context):
     print(event)
