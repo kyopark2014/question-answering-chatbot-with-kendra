@@ -177,6 +177,12 @@ kendra.batch_put_document(
 )
 ```
 
+이때 전송할 수 있는 Document의 크기는 아래와 같습니다.
+- 5 MB total size for inline documents
+- 50 MB total size for files from an S3 bucket
+- 5 MB extracted text for any file
+
+
 업로드한 문서 파일에 대한 정보를 사용자에게 보여주기 위하여 아래와 같이 요약(Summerization)을 수행합니다.
 
 ```python
@@ -281,3 +287,6 @@ else:
 [Adding documents with the BatchPutDocument API](https://docs.aws.amazon.com/kendra/latest/dg/in-adding-binary-doc.html)
 
 [class CfnIndex (construct)](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_kendra.CfnIndex.html)
+
+[boto3 - batch_put_document](https://boto3.amazonaws.com/v1/documentation/api/1.26.99/reference/services/kendra/client/batch_put_document.html)
+
