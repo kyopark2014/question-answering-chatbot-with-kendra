@@ -303,7 +303,7 @@ def lambda_handler(event, context):
             # stor the object into kendra
             store_document(object, requestId)
 
-            # summerization to show the document
+            # summerization to show the content of the document
             file_type = object[object.rfind('.')+1:len(object)]
             print('file_type: ', file_type)
             
