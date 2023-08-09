@@ -20,6 +20,7 @@ const endpoint_url = "https://prod.us-west-2.frontend.bedrock.aws.dev";
 const model_id = "amazon.titan-tg1-large"; // amazon.titan-e1t-medium, anthropic.claude-v1
 const projectName = "chatbot-with-kendra";
 const bucketName = `storage-for-${projectName}`;
+const accessType = "aws"; // aws or preview
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -199,7 +200,8 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         callLogTableName: callLogTableName,
         configTableName: configTableName,
         kendraIndex: cfnIndex.attrId,
-        roleArn: roleLambda.roleArn
+        roleArn: roleLambda.roleArn,
+        accessType: accessType 
       }
     });     
     lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
