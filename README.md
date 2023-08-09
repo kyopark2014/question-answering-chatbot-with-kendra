@@ -1,6 +1,6 @@
 # Amazon Kendra를 이용한 Question/Answering Chatbot 만들기
 
-여기서는 Amazon Bedrock의 LLM 모델을 이용하여 Question/Answering을 수행하는 Chatbot을 만듧니다. 또한 Amazon Kendra로 RAG를 구현하여, Question/Answering에 대한 환각(hallucination) 영향을 줄일 수 있습니다. 파일 업로드는 [Lambda (upload)](./lambda-upload/index.js)를 이용하여 presigned url을 얻어서, S3에 파일을 안전하게 저장합니다. 이후 S3에 Object로 저장된 문서 파일에 대한 bucket과 key 정보를 kendra에 전달하면 kendra에서 문서를 가져와서 인덱싱을 합니다. 이후 사용자가 질문을 하면, Kendra로 이용하여 가장 관련이 있는 문장을 조회하고 이를 이용하여 LLM이 좀 더 정확한 답변을 할 수 있습니다.
+여기서는 Amazon Bedrock의 LLM 모델을 이용하여 Question/Answering을 수행하는 Chatbot을 만듧니다. 또한 Amazon Kendra로 RAG를 구현하여, Question/Answering에 대한 환각(hallucination) 영향을 줄일 수 있습니다. 파일 업로드는 [Lambda (upload)](./lambda-upload/index.js)를 이용하여 presigned url을 얻어서, S3에 파일을 안전하게 저장합니다. 이후 S3에 Object로 저장된 문서 파일에 대한 bucket과 key 정보를 kendra에 전달하면 kendra에서 문서를 가져와서 인덱싱을 합니다. 이후 사용자가 질문을 하면, Kendra를 이용하여 가장 관련이 있는 문장을 조회하고 이를 이용하여 LLM이 좀 더 정확한 답변을 할 수 있습니다.
 
 전체적인 Architecture는 아래와 같습니다. 사용자가 파일을 업로드하면 Amazon S3에 저장된 후, kendra에 전달되어 symantic search에 활용되어집니다. 이후 사용자가 텍스트로 질문을 하면, CloudFront - API Gateway를 지나 [Lambda (chat)](./lambda-chat/lambda_function.py)에 텍스트가 전달됩니다. 이제 kendra를 통해 검색을 수행하여, 미리 입력한 문서중에서 가까운 문장을 얻습니다. 이후 Bedrock의 LLM을 이용하여 답변을 얻습니다. 답변은 DynamoDB에 call log의 형태로 저장되어 추후 각종 통계정보나 결과를 분석하는데에 이용될 수 있습니다. LLM은 Bedrock을 LangChain 형식의 API를 통해 구현하였고, Chatbot을 제공하는 인프라는 AWS CDK를 통해 배포합니다. 
 
