@@ -49,7 +49,7 @@ modelInfo = boto3_bedrock.list_foundation_models()
 print('models: ', modelInfo)
 
 parameters = {
-    "maxTokenCount":512,
+    "maxTokenCount":4096, 
     "stopSequences":[],
     "temperature":0,
     "topP":0.9
@@ -202,6 +202,7 @@ def get_answer_using_template(query):
             chain_type_kwargs={"prompt": PROMPT}
         )
         result = qa({"query": query})
+        print('result: ', result)
         
         source_documents = result['source_documents']
         print(source_documents)

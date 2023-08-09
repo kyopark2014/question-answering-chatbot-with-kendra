@@ -60,8 +60,6 @@ lambdaChat -> s3 ++: get document
 
 s3 -> lambdaChat --: 200OK
 
-lambdaChat -> lambdaChat: Extract text
-
 lambdaChat -> kendra ++: store document
 
 kendra -> lambdaChat --: 200OK
