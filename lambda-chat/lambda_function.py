@@ -218,7 +218,7 @@ def get_answer_using_template(query):
 
         if len(source_documents)>=1:
             reference = get_reference(source_documents)
-            print('reference: ', reference)
+            # print('reference: ', reference)
 
             return result['result']+reference
         else:
