@@ -221,7 +221,18 @@ msg = summary
 
 ### Question/Answering
 
-사용자가 채팅창에서 메시지를 입력할때 발생한 메시지는 아래처럼 query로 전달되고, [Kendra Retriever](https://python.langchain.com/docs/integrations/retrievers/amazon_kendra_retriever)를 이용하여 get_relevant_documents()로 관련된 문장들을 kendra로부터 가져옵니다. 이때 가져온 문장이 없다면 bedrock의 llm()을 이용하여 결과를 얻고, kendra에 관련된 데이터가 있다면 아래와 같이 template을 이용하여 [RetrievalQA](https://python.langchain.com/docs/modules/chains/popular/vector_db_qa)로 query에 대한 응답을 구하여 결과로 전달합니다.
+Kendra는 구글 검색처럼 Query할 수 있는 텍스트의 길이 제한이 있습니다. [Quota: Characters in query text - tokyo](https://ap-northeast-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)와 같이 기본값은 1000자입니다. Quota는 조정 가능하지만 일반적 질문으로 수천자를 사용하는 경우는 거의 없으므로 아래와 같이 1000자 이하의 질문만 Kenra를 통해 관련 문서를 조회하도록 합니다. 
+
+```python
+querySize = len(text)
+
+if querySize<1000: 
+    msg = get_answer_using_template(text)
+else:
+    msg = llm(text)
+```
+
+아래와 같이 일정 길이 이하의 query는 [get_relevant_documents()](https://python.langchain.com/docs/modules/data_connection/retrievers/)을 이용하여 [Kendra Retriever](https://python.langchain.com/docs/integrations/retrievers/amazon_kendra_retriever)로 관련된 문장들을 가져옵니다. 이때 관련된 문장이 없다면 bedrock의 llm()을 이용하여 결과를 얻고, kendra에 관련된 데이터가 있다면 아래와 같이 template을 이용하여 [RetrievalQA](https://python.langchain.com/docs/modules/chains/popular/vector_db_qa)로 query에 대한 응답을 구하여 결과로 전달합니다.
 
 ```python
 relevant_documents = retriever.get_relevant_documents(query)
@@ -294,23 +305,6 @@ else:
 
 일반적인 chatbot들은 지속적인 세션을 유지 관리하기 위해서는 websocket 등을 사용하지만, 여기서 사용한 Chatbot은 API를 테스트하기 위하여 RESTful API를 사용하고 있습니다. 따라서, LLM에서 응답이 일정시간(30초)이상 지연되는 경우에 브라우저에서 답변을 볼 수 없습니다. 따라서 긴 응답시간이 필요한 경우에 CloudWatch에서 [lambda-chat](./lambda-chat/lambda_function.py)의 로그를 확인하거나, DynamoDB에 저장된 call log를 확인합니다.
 
-## Troubleshooting
-
-### 1000자 이상의 query에 대한 Kendra 에러
-
-아래와 같이 1000자 이상의 query에 대하여 에러가 발생합니다.
-
-"An error occurred (ValidationException) when calling the Retrieve operation: The provided QueryText has a character count of 3630, which exceeds the limit. The character count must be less than or equal to 1000."
-
-이 경우에 첫번째 approach는 quota 증설 요청이 있을수 있습니다.
-
-[Quota: Characters in query text - us-east-1](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)
-
-[Quota: Characters in query text - tokyo](https://ap-northeast-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-7107C1BC)
-
-[Quota: Characters displayed in the Document Excerpt of a Document type result](https://us-east-1.console.aws.amazon.com/servicequotas/home/services/kendra/quotas/L-196E775D)
-
-검색의 길이 제한은 구글 검색도 동일하므로, 검색 길이의 제한은 피할 수 없습니다. 여기서는 1000자이상일 경우에는 RAG를 통해 검색하지 않도록 처리하였습니다. 
 
 ## Reference 
 
