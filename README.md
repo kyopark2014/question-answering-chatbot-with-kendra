@@ -247,7 +247,29 @@ else:
         chain_type_kwargs = { "prompt": PROMPT }
     )
     result = qa({ "query": query })
+    source_documents = result['source_documents']  
+```
 
+여기서 RetrievalQA을 이용한 Query시 얻어진 metadata의 형태는 아래와 같습니다.
+
+![noname](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/c46c0869-6f11-44cb-97e3-0cde821b531a)
+
+metadata에서 title과 document_attributes으로 부터 reference 정보를 추출한 후에 결과와 함께 전달합니다. 
+
+```python
+def get_reference(docs):
+    reference = "\n\nFrom\n"
+    for doc in docs:
+        name = doc.metadata['title']
+        page = doc.metadata['document_attributes']['_excerpt_page_number']
+    
+        reference = reference + (str(page)+'page in '+name+'\n')
+    return reference
+
+if len(source_documents)>=1:
+    reference = get_reference(source_documents)
+    return result['result']+reference
+else:
     return result['result']
 ```
 
