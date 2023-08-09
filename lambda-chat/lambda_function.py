@@ -100,7 +100,7 @@ def store_document(s3_file_name, requestId):
             "Bucket": s3_bucket,
             "Key": s3_prefix+'/'+s3_file_name
         },
-        "Title": "Document from client",
+        "Title": s3_file_name,
         "Id": requestId
     }
 
