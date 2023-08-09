@@ -13,12 +13,20 @@
 3) Chat API에서 request type을 'document'로 지정하면 [lambda (chat)](./lambda-chat/index.js)은 S3에서 object를 로드하여 텍스트를 추출합니다.
 4) 추출한 텍스트를 Kendra로 전달합니다.
 
+아래는 문서 업로드시의 sequence diagram입니다. 
+
+![seq-upload](./sequence/seq-upload.png)
+
 채팅 창에서 텍스트 입력(Prompt)를 통해 Kendra로 RAG를 활용하는 과정은 아래와 같습니다.
 1) 사용자가 채팅창에서 질문(Question)을 입력합니다.
 2) 이것은 Chat API를 이용하여 [lambda (chat)](./lambda-chat/index.js)에 전달됩니다.
 3) lambda(chat)은 Kendra에 질문과 관련된 문장이 있는지 확인합니다.
 4) Kendra로 부터 얻은 관련된 문장들로 prompt template를 생성하여 대용량 언어 모델(LLM) Endpoint로 질문을 전달합니다. 이후 답변을 받으면 사용자에게 결과를 전달합니다.
 5) 결과는 DyanmoDB에 저장되어 이후 데이터 분석등의 목적을 위해 활용됩니다.
+
+아래는 kendra를 이용한 메시지 동작을 설명하는 sequence diagram입니다. 
+
+![seq-chat](./sequence/seq-chat.png)
 
 
 ## 주요 구성
