@@ -12,6 +12,7 @@
 2) 이후 presigned url로 문서를 업로드 하면 S3에 Object로 저장됩니다.
 3) Chat API에서 request type을 'document'로 지정하면 [lambda (chat)](./lambda-chat/index.js)은 S3에서 object를 로드하여 텍스트를 추출합니다.
 4) 추출한 텍스트를 Kendra로 전달합니다.
+5) 문서 내용을 사용자가 알수 있도록, 요약(summarization)을 수행하고, 결과를 사용자에게 전달합니다.
 
 아래는 문서 업로드시의 sequence diagram입니다. 
 
