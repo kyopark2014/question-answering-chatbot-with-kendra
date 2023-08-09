@@ -197,7 +197,7 @@ kendra.batch_put_document(
 - 5 MB extracted text for any file
 
 
-업로드한 문서 파일에 대한 정보를 사용자에게 보여주기 위하여 아래와 같이 [load_summarize_chain](https://python.langchain.com/docs/use_cases/summarization)을 이용하여 요약(Summerization)을 수행합니다.
+업로드한 문서 파일에 대한 정보를 사용자에게 보여주기 위하여 아래와 같이 [load_summarize_chain](https://python.langchain.com/docs/use_cases/summarization)을 이용하여 요약(Summarization)을 수행합니다.
 
 ```python
 file_type = object[object.rfind('.') + 1: len(object)]
@@ -292,7 +292,7 @@ else:
 
 ## 실행결과
 
-파일을 올리면 먼저 파일을 S3에 올리고, 이후로 kendra에 등록합니다. 업로드 한 파일의 내용을 확인하기 위하여 아래와 같이 요약(Summeraztion)을 수행합니다.
+파일을 올리면 먼저 파일을 S3에 올리고, 이후로 kendra에 등록합니다. 업로드 한 파일의 내용을 확인하기 위하여 아래와 같이 요약(Summaraztion)을 수행합니다.
 
 ![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/74768245-6738-4a14-b942-cb6a9f39d252)
 
