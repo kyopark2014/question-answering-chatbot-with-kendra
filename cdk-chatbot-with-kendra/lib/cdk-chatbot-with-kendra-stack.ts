@@ -212,7 +212,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
 
     // role
     const role = new iam.Role(this, `api-role-for-${projectName}`, {
-      roleName: `api-role-for-${projectName}`,
+      roleName: `api-role-for-${projectName}-${region}`,
       assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com")
     });
     role.addToPolicy(new iam.PolicyStatement({
