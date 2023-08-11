@@ -18,7 +18,8 @@ const s3_prefix = 'docs';
 const bedrock_region = "us-west-2";
 const endpoint_url = "https://prod.us-west-2.frontend.bedrock.aws.dev";
 const model_id = "amazon.titan-tg1-large"; // amazon.titan-e1t-medium, anthropic.claude-v1
-const projectName = "chatbot-with-kendra";
+const userName = "kyopark";
+const projectName = `chatbot-with-kendra-${userName}`;
 const bucketName = `storage-for-${projectName}`;
 const accessType = "aws"; // aws or preview
 
