@@ -216,7 +216,10 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     });
     role.addToPolicy(new iam.PolicyStatement({
       resources: ['*'],
-      actions: ['lambda:InvokeFunction']
+      actions: [
+        'lambda:InvokeFunction',
+        'cloudwatch:*'
+      ]
     }));
     role.addManagedPolicy({
       managedPolicyArn: 'arn:aws:iam::aws:policy/AWSLambdaExecute',
@@ -231,8 +234,8 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         stageName: stage,
 
         // logging for debug
-        loggingLevel: apiGateway.MethodLoggingLevel.INFO, 
-        dataTraceEnabled: true,
+        // loggingLevel: apiGateway.MethodLoggingLevel.INFO, 
+        // dataTraceEnabled: true,
       },
     });  
 
