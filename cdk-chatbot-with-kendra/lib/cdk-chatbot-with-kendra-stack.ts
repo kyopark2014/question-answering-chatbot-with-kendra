@@ -143,7 +143,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     );  
           
     const roleLambda = new iam.Role(this, `role-lambda-chat-for-${projectName}`, {
-      roleName: `role-lambda-chat-for-${projectName}`,
+      roleName: `role-lambda-chat-for-${projectName}-${region}`,
       assumedBy: new iam.CompositePrincipal(
         new iam.ServicePrincipal("lambda.amazonaws.com"),
         new iam.ServicePrincipal("bedrock.amazonaws.com"),
