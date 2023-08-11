@@ -12,6 +12,7 @@ import * as s3Deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as kendra from 'aws-cdk-lib/aws-kendra';
 
+const region = process.env.CDK_DEFAULT_REGION;   
 const debug = false;
 const stage = 'dev';
 const s3_prefix = 'docs';
@@ -20,7 +21,7 @@ const endpoint_url = "https://prod.us-west-2.frontend.bedrock.aws.dev";
 const model_id = "amazon.titan-tg1-large"; // amazon.titan-e1t-medium, anthropic.claude-v1
 const userName = "kyopark";
 const projectName = `chatbot-with-kendra-${userName}`;
-const bucketName = `storage-for-${projectName}`;
+const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "aws"; // aws or preview
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
@@ -123,7 +124,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'The index of kendra',
     }); 
 
-    const region = process.env.CDK_DEFAULT_REGION;
     const accountId = process.env.CDK_DEFAULT_ACCOUNT;
     const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${cfnIndex.attrId}`
     if(debug) {
