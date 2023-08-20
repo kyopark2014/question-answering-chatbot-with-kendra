@@ -196,7 +196,7 @@ def get_answer_using_template(query):
         print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
         print('----')
         for i, rel_doc in enumerate(relevant_documents):
-            print_ww(f'## Document {i+1}: {rel_doc.page_content}.......')
+            print(f'## Document {i+1}: {rel_doc.page_content}.......')
             print('---')
 
         prompt_template = """Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
