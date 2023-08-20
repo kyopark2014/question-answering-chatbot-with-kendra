@@ -23,9 +23,9 @@ Kendra를 설치하기 위해서는 [IAM Identity Center - Tokyo](https://ap-nor
 curl https://raw.githubusercontent.com/kyopark2014/technical-summary/main/resize.sh -o resize.sh
 ```
 
-이후 아래 명령어로 용량을 100G로 변경합니다.
+이후 아래 명령어로 용량을 80G로 변경합니다.
 ```text
-chmod a+rx resize.sh && ./resize.sh 100
+chmod a+rx resize.sh && ./resize.sh 80
 ```
 
 
