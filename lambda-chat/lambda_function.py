@@ -18,10 +18,6 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.retrievers import AmazonKendraRetriever
 
-module_path = "."
-sys.path.append(os.path.abspath(module_path))
-from utils import bedrock, print_ww
-
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
@@ -44,18 +40,22 @@ bedrock_config = {
     
 # supported llm list from bedrock
 if accessType=='aws':  # internal user of aws
-    boto3_bedrock = bedrock.get_bedrock_client(
-        region=bedrock_config["region_name"],
-        url_override=bedrock_config["endpoint_url"])
+    boto3_bedrock = boto3.client(
+        service_name='bedrock',
+        region_name=bedrock_config["region_name"],
+        endpoint_url=bedrock_config["endpoint_url"],
+    )
 else: # preview user
-    boto3_bedrock = bedrock.get_bedrock_client(
-        region=bedrock_config["region_name"])
+    boto3_bedrock = boto3.client(
+        service_name='bedrock',
+        region_name=bedrock_config["region_name"],
+    )
     
 modelInfo = boto3_bedrock.list_foundation_models()    
 print('models: ', modelInfo)
 
 parameters = {
-    "maxTokenCount":4096, 
+    "maxTokenCount":1024, 
     "stopSequences":[],
     "temperature":0,
     "topP":0.9
