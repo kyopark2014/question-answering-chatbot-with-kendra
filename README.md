@@ -142,19 +142,20 @@ bedrock_config = {
     "endpoint_url":"https://prod.us-west-2.frontend.bedrock.aws.dev"
 }
     
-if accessType=='aws':  # internal user of aws
-    boto3_bedrock = bedrock.get_bedrock_client(
-        region=bedrock_config["region_name"],
-        url_override=bedrock_config["endpoint_url"])
+if accessType=='aws': # internal user of aws
+    boto3_bedrock = boto3.client(
+        service_name='bedrock’,
+        region_name=bedrock_config["region_name"],
+        endpoint_url=bedrock_config["endpoint_url"],
+    )
 else: # preview user
-    boto3_bedrock = bedrock.get_bedrock_client(
-        region=bedrock_config["region_name"])
-    
-modelInfo = boto3_bedrock.list_foundation_models()    
-print('models: ', modelInfo)
+    boto3_bedrock = boto3.client(
+        service_name='bedrock’,
+        region_name=bedrock_config["region_name"],
+    )
 
-modelId = 'amazon.titan-tg1-large'  # anthropic.claude-v1
-llm = Bedrock(model_id=modelId, client=boto3_bedrock)    
+modelId = 'amazon.titan-tg1-large
+llm = Bedrock(model_id=modelId, client=boto3_bedrock) 
 ```
 
 접속에 대한 설정은 [cdk-chatbot-with-kendra-stack.ts](./cdk-chatbot-with-kendra/lib/cdk-chatbot-with-kendra-stack.ts)을 열어서 "accessType"을 아래와 같이 설정합니다. 
