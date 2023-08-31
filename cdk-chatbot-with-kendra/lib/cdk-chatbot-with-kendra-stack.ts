@@ -77,15 +77,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       partitionKey: { name: 'type', type: dynamodb.AttributeType.STRING },
     });
 
-    // DynamoDB for configuration
-    const configTableName = `db-configuration-for-${projectName}`;
-    const configDataTable = new dynamodb.Table(this, `dynamodb-configuration-for-${projectName}`, {
-      tableName: configTableName,
-      partitionKey: { name: 'user-id', type: dynamodb.AttributeType.STRING },      
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
-
     // copy web application files into s3 bucket
     new s3Deploy.BucketDeployment(this, `upload-HTML-for-${projectName}`, {
       sources: [s3Deploy.Source.asset("../html")],
@@ -199,7 +190,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         s3_bucket: s3Bucket.bucketName,
         s3_prefix: s3_prefix,
         callLogTableName: callLogTableName,
-        configTableName: configTableName,
         kendraIndex: cfnIndex.attrId,
         roleArn: roleLambda.roleArn,
         accessType: accessType 
@@ -208,7 +198,6 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
     s3Bucket.grantRead(lambdaChatApi); // permission for s3
     callLogDataTable.grantReadWriteData(lambdaChatApi); // permission for dynamo
-    configDataTable.grantReadWriteData(lambdaChatApi); // permission for dynamo
 
     // role
     const role = new iam.Role(this, `api-role-for-${projectName}`, {
