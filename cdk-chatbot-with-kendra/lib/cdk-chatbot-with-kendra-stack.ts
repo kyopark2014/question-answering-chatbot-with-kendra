@@ -23,6 +23,9 @@ const projectName = `chatbot-with-kendra-${userName}`;
 const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "preview"; // aws or preview
 const bedrock_region = "us-east-1";  // "us-east-1" "us-west-2" 
+const enableConversationMode = 'true';
+const enableReference = 'false';
+const enableRAG = 'true';
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -192,7 +195,10 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         callLogTableName: callLogTableName,
         kendraIndex: cfnIndex.attrId,
         roleArn: roleLambda.roleArn,
-        accessType: accessType 
+        accessType: accessType,
+        enableConversationMode: enableConversationMode,
+        enableReference: enableReference,
+        enableRAG: enableRAG
       }
     });     
     lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
