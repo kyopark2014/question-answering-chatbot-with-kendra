@@ -323,12 +323,12 @@ def lambda_handler(event, context):
                 if querySize<1000: 
                     if enableConversationMode == 'true':
                         msg = get_answer_using_template_with_history(text, chat_memory)
-                        chat_memory.save_context({"input": text}, {"output": msg})
                     else:
                         msg = get_answer_using_template(text)
                 else:
                     msg = llm(text)
             #print('msg: ', msg)
+            chat_memory.save_context({"input": text}, {"output": msg})
             
         elif type == 'document':
             object = body
