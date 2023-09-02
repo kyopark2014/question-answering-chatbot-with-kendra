@@ -320,7 +320,7 @@ def lambda_handler(event, context):
                 msg  = "RAG is disabled"
             else:
 
-                if querySize<1000: 
+                if querySize<1000 and enableRAG=='true': 
                     if enableConversationMode == 'true':
                         msg = get_answer_using_template_with_history(text, chat_memory)
                     else:
