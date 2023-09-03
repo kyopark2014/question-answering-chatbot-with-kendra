@@ -171,9 +171,10 @@ def get_reference(docs):
     return reference
 
 def get_answer_using_template_with_history(query, chat_memory):  
-    condense_template = """Given the following conversation and a follow up question, answer friendly. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-    Chat History:
+    condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    
     {chat_history}
+
     Human: {question}
     AI:"""
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
