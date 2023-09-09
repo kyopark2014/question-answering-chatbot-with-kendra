@@ -72,6 +72,8 @@ def get_parameter(modelId):
             "max_tokens_to_sample":1024,
         }
 parameters = get_parameter(modelId)
+HUMAN_PROMPT = "\n\nHuman:"
+AI_PROMPT = "\n\nAssistant:"
 
 llm = Bedrock(model_id=modelId, client=boto3_bedrock, model_kwargs=parameters)
 
@@ -176,7 +178,8 @@ def get_answer_using_template_with_history(query, chat_memory):
     {chat_history}
 
     Human: {question}
-    AI:"""
+    
+    Assistant:"""
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
     
     qa = ConversationalRetrievalChain.from_llm(
@@ -194,12 +197,13 @@ def get_answer_using_template_with_history(query, chat_memory):
     )
 
     # combine any retrieved documents.
-    prompt_template = """Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    prompt_template = """\n\nHuman: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
 
     {context}
 
     Question: {question}
-    AI:"""
+    
+    Assistant:"""
     qa.combine_docs_chain.llm_chain.prompt = PromptTemplate.from_template(prompt_template) 
     
     # extract chat history
@@ -342,7 +346,7 @@ def lambda_handler(event, context):
                     else:
                         msg = get_answer_using_template(text)
                 else:
-                    msg = llm(text)
+                    msg = llm(HUMAN_PROMPT+text+AI_PROMPT)
             #print('msg: ', msg)
             chat_memory.save_context({"input": text}, {"output": msg})
             
