@@ -203,7 +203,7 @@ def get_answer_using_template_with_history(query, chat_memory):
     
     # load related docs
     relevant_documents = retriever.get_relevant_documents(query)
-    print('relevant_documents: ', relevant_documents)
+    #print('relevant_documents: ', relevant_documents)
 
     print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
     print('----')
@@ -224,8 +224,14 @@ def get_answer_using_template_with_history(query, chat_memory):
         result = llm(query)
     print('result: ', result)
 
-    return result
-    
+    if len(relevant_documents)>=1:
+        reference = get_reference(relevant_documents)
+        print('reference: ', reference)
+
+        return result+reference
+    else:
+        return result
+
 def get_answer_using_ConversationalRetrievalChain(query, chat_memory):  
     condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
     
