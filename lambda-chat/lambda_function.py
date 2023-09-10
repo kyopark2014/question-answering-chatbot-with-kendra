@@ -207,8 +207,11 @@ def get_answer_using_template_with_history(query, chat_memory):
     print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
     print('----')
     for i, rel_doc in enumerate(relevant_documents):
-        chat_history = f"{chat_history}\nHuman: {rel_doc.page_content}"  # append relevant_documents at the end of chat history
-        print(f'## Document {i+1}: {rel_doc.page_content}.......')
+        doc = rel_doc.page_content[rel_doc.page_content.rfind('Document Excerpt:')+1:len(object)]
+        print('doc: ', doc)
+        
+        chat_history = f"{chat_history}\nHuman: {doc}"  # append relevant_documents at the end of chat history
+        print(f'## Document {i+1}: {rel_doc.page_content}')
         print('---')
 
     print('chat_history:\n ', chat_history)
