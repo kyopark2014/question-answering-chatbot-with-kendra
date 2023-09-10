@@ -203,6 +203,7 @@ def get_answer_using_template_with_history(query, chat_memory):
     
     # load related docs
     relevant_documents = retriever.get_relevant_documents(query)
+    print('relevant_documents: ', relevant_documents)
 
     print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
     print('----')
@@ -297,7 +298,6 @@ def get_answer_using_ConversationalRetrievalChain(query, chat_memory):
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
     print('length of relevant_documents: ', len(relevant_documents))
-    print('relevant_documents: ', relevant_documents)
 
     if(len(relevant_documents)==0):
         return llm(query)
