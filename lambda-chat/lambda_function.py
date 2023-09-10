@@ -173,6 +173,56 @@ def get_reference(docs):
     return reference
 
 def get_answer_using_template_with_history(query, chat_memory):  
+    condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer. You will be acting as a thoughtful advisor.
+    
+    {chat_history}
+    
+    Human: {question}
+
+    Assistant:"""
+    CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
+        
+    # extract chat history
+    chats = chat_memory.load_memory_variables({})
+    chat_history_all = chats['history']
+    print('chat_history_all: ', chat_history_all)
+
+    # use last two chunks of chat history
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000,chunk_overlap=0)
+    texts = text_splitter.split_text(chat_history_all) 
+
+    pages = len(texts)
+    print('pages: ', pages)
+
+    if pages >= 2:
+        chat_history = f"{texts[pages-2]} {texts[pages-1]}"
+    elif pages == 1:
+        chat_history = texts[0]
+    else:  # 0 page
+        chat_history = ""
+    
+    # load related docs
+    relevant_documents = retriever.get_relevant_documents(query)
+
+    print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
+    print('----')
+    for i, rel_doc in enumerate(relevant_documents):
+        chat_history = f"{chat_history}\nHuman: {rel_doc.page_content}"  # append relevant_documents at the end of chat history
+        print(f'## Document {i+1}: {rel_doc.page_content}.......')
+        print('---')
+
+    print('chat_history:\n ', chat_history)
+
+    # make a question using chat history
+    if pages >= 1:
+        result = llm(CONDENSE_QUESTION_PROMPT.format(question=query, chat_history=chat_history))
+    else:
+        result = llm(query)
+    #print('result: ', result)
+
+    return result    
+
+def get_answer_using_ConversationalRetrievalChain(query, chat_memory):  
     condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
     
     {chat_history}
@@ -228,7 +278,7 @@ def get_answer_using_template_with_history(query, chat_memory):
 
     # make a question using chat history
     result = qa({"question": query, "chat_history": chat_history})    
-    print('result: ', result)    
+    print('result: ', result)
     
     # get the reference
     source_documents = result['source_documents']
@@ -342,13 +392,15 @@ def lambda_handler(event, context):
 
                 if querySize<1000 and enableRAG=='true': 
                     if enableConversationMode == 'true':
+                        #msg = get_answer_using_ConversationalRetrievalChain(text, chat_memory)
                         msg = get_answer_using_template_with_history(text, chat_memory)
                     else:
                         msg = get_answer_using_template(text)
                 else:
                     msg = llm(HUMAN_PROMPT+text+AI_PROMPT)
             #print('msg: ', msg)
-            chat_memory.save_context({"input": text}, {"output": msg})
+            storedMsg = str(msg).replace("\n"," ") 
+            chat_memory.save_context({"input": text}, {"output": storedMsg})  
             
         elif type == 'document':
             object = body
