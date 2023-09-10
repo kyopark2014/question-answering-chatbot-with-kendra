@@ -223,6 +223,7 @@ def get_answer_using_template_with_history(query, chat_memory):
         result = llm(query)
     print('result: ', result)
 
+    return result
     
 def get_answer_using_ConversationalRetrievalChain(query, chat_memory):  
     condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -296,6 +297,7 @@ def get_answer_using_ConversationalRetrievalChain(query, chat_memory):
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
     print('length of relevant_documents: ', len(relevant_documents))
+    print('relevant_documents: ', relevant_documents)
 
     if(len(relevant_documents)==0):
         return llm(query)
@@ -442,12 +444,13 @@ def lambda_handler(event, context):
             'msg': {'S':msg}
         }
 
-        client = boto3.client('dynamodb')
-        try:
-            resp =  client.put_item(TableName=callLogTableName, Item=item)
-        except: 
-            raise Exception ("Not able to write into dynamodb")        
-        #print('resp, ', resp)
+        if len(msg):
+            client = boto3.client('dynamodb')
+            try:
+                resp =  client.put_item(TableName=callLogTableName, Item=item)
+            except: 
+                raise Exception ("Not able to write into dynamodb")        
+            #print('resp, ', resp)
 
     return {
         'statusCode': 200,
