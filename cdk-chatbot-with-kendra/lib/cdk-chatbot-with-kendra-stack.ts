@@ -22,8 +22,8 @@ const projectName = `chatbot-with-kendra`;
 const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "preview"; // aws or preview
 const bedrock_region = "us-east-1";  // "us-east-1" "us-west-2" 
-const enableConversationMode = 'false';
-const enableReference = 'false';
+const enableConversationMode = 'true';
+const enableReference = 'true';
 const enableRAG = 'true';
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
