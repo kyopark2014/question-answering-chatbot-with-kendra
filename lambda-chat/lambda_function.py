@@ -221,10 +221,9 @@ def get_answer_using_template_with_history(query, chat_memory):
         result = llm(CONDENSE_QUESTION_PROMPT.format(question=query, chat_history=chat_history))
     else:
         result = llm(query)
-    #print('result: ', result)
+    print('result: ', result)
 
-    return result    
-
+    
 def get_answer_using_ConversationalRetrievalChain(query, chat_memory):  
     condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
     
@@ -433,6 +432,8 @@ def lambda_handler(event, context):
         elapsed_time = int(time.time()) - start
         print("total run time(sec): ", elapsed_time)
 
+        print('msg: ', msg)
+
         item = {
             'user-id': {'S':userId},
             'request-id': {'S':requestId},
@@ -445,9 +446,8 @@ def lambda_handler(event, context):
         try:
             resp =  client.put_item(TableName=callLogTableName, Item=item)
         except: 
-            raise Exception ("Not able to write into dynamodb")
-        
-        print('resp, ', resp)
+            raise Exception ("Not able to write into dynamodb")        
+        #print('resp, ', resp)
 
     return {
         'statusCode': 200,
