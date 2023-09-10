@@ -80,10 +80,10 @@ llm = Bedrock(model_id=modelId, client=boto3_bedrock, model_kwargs=parameters)
 retriever = AmazonKendraRetriever(index_id=kendraIndex)
 
 # memory for retrival docs
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key="question", output_key='answer', human_prefix='Human', ai_prefix='AI')
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key="question", output_key='answer', human_prefix='Human', ai_prefix='Assistant')
 
 # memory for conversation
-chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='AI')
+chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
 
 # store document into Kendra
 def store_document(s3_file_name, requestId):
