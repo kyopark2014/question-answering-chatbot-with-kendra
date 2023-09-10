@@ -222,12 +222,12 @@ def get_answer_using_template_with_history(query, chat_memory):
         result = llm(CONDENSE_QUESTION_PROMPT.format(question=query, chat_history=chat_history))
     else:
         result = llm(query)
-    print('result: ', result)
+    # print('result: ', result)
 
     # add refrence
     if len(relevant_documents)>=1 and enableReference=='true':
         reference = get_reference(relevant_documents)
-        print('reference: ', reference)
+        # print('reference: ', reference)
 
         return result+reference
     else:

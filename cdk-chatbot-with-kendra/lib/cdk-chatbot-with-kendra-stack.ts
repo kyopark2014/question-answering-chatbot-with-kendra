@@ -22,7 +22,7 @@ const projectName = `chatbot-with-kendra`;
 const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "preview"; // aws or preview
 const bedrock_region = "us-east-1";  // "us-east-1" "us-west-2" 
-const enableConversationMode = 'true';
+const enableConversationMode = 'false';
 const enableReference = 'false';
 const enableRAG = 'true';
 
