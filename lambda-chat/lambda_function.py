@@ -6,6 +6,7 @@ import os
 import time
 import PyPDF2
 import csv
+import re
 from io import BytesIO
 
 from langchain.llms.bedrock import Bedrock
@@ -135,14 +136,9 @@ def load_document(file_type, s3_file_name):
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000,chunk_overlap=100)
     texts = text_splitter.split_text(new_contents) 
-    print('texts[0]: ', texts[0])
-        
-    docs = [
-        Document(
-            page_content=t
-        ) for t in texts[:3]
-    ]
-    return docs
+    #print('texts[0]: ', texts[0])
+
+    return texts            
 
 def summerize_text(text):
     docs = [
@@ -424,26 +420,32 @@ def lambda_handler(event, context):
             file_type = object[object.rfind('.')+1:len(object)]
             print('file_type: ', file_type)
 
-            
+            texts = load_document(file_type, object)
 
-
-            
-            docs = load_document(file_type, object)
+            docs = [
+                Document(
+                    page_content=t
+                ) for t in texts[:3]
+            ]
             print('docs: ', docs)
             #hanCount = len(re.findall(u'[\u3130-\u318F\uAC00-\uD7A3]+', str(docs))
 
-            if modelId == 'anthropic.claude-v1' or modelId == 'anthropic.claude-v2':
-                prompt_template = """다음 텍스트를 간결하게 요약하십시오. 텍스트의 요점을 다루는 글머리 기호로 응답을 반환합니다.
+            hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
+            word = hangul.search(str(texts))
+            print('word: ', word)
+            
+            if word:
+                prompt_template = """\n\nHuman: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
 
                 {text}
                 
-                SUMMARY """
-            else:
-                prompt_template = """Write a concise summary of the following:
+                Assistant:"""        
+            else:         
+                prompt_template = """\n\nWrite a concise summary of the following:
 
                 {text}
                 
-                CONCISE SUMMARY """
+                Assistant:"""    
 
             PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
             chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
