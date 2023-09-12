@@ -140,24 +140,43 @@ def load_document(file_type, s3_file_name):
 
     return texts            
 
-def summerize_text(text):
+def get_summary(texts):
     docs = [
         Document(
-            page_content=text
-        )
+            page_content=t
+        ) for t in texts[:3]
     ]
-    prompt_template = """Write a concise summary of the following:
 
-    {text}
-                
-    CONCISE SUMMARY """
+    # check korean
+    pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
+    word_kor = pattern_hangul.search(str(texts))
+    print('word_kor: ', word_kor)
+    
+    if word_kor:
+        #prompt_template = """\n\nHuman: 다음 텍스트를 간결하게 요약하세오. 텍스트의 요점을 다루는 글머리 기호로 응답을 반환합니다.
+        prompt_template = """\n\nHuman: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
 
+        {text}
+        
+        Assistant:"""        
+    else:         
+        prompt_template = """\n\nWrite a concise summary of the following:
+
+        {text}
+        
+        Assistant:"""
+        
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
     chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
     summary = chain.run(docs)
-    print('summarized text: ', summary)
+    print('summary: ', summary)
 
-    return summary
+    if summary == '':  # error notification
+        summary = 'Fail to summarize the document. Try agan...'
+        return summary
+    else:
+        # return summary[1:len(summary)-1]   
+        return summary
               
 def get_reference(docs):
     reference = "\n\nFrom\n"
@@ -422,37 +441,8 @@ def lambda_handler(event, context):
 
             texts = load_document(file_type, object)
 
-            docs = [
-                Document(
-                    page_content=t
-                ) for t in texts[:3]
-            ]
-            print('docs: ', docs)
-            #hanCount = len(re.findall(u'[\u3130-\u318F\uAC00-\uD7A3]+', str(docs))
-
-            hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
-            word = hangul.search(str(texts))
-            print('word: ', word)
-            
-            if word:
-                prompt_template = """\n\nHuman: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
-
-                {text}
-                
-                Assistant:"""        
-            else:         
-                prompt_template = """\n\nWrite a concise summary of the following:
-
-                {text}
-                
-                Assistant:"""    
-
-            PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
-            chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
-            summary = chain.run(docs)
-            print('summary: ', summary)
-
-            msg = summary
+            # summerize the document
+            msg = get_summary(texts)
 
         elapsed_time = int(time.time()) - start
         print("total run time(sec): ", elapsed_time)
