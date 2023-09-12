@@ -423,8 +423,15 @@ def lambda_handler(event, context):
             # summerization to show the content of the document
             file_type = object[object.rfind('.')+1:len(object)]
             print('file_type: ', file_type)
+
+            
+
+
             
             docs = load_document(file_type, object)
+            print('docs: ', docs)
+            #hanCount = len(re.findall(u'[\u3130-\u318F\uAC00-\uD7A3]+', str(docs))
+
             if modelId == 'anthropic.claude-v1' or modelId == 'anthropic.claude-v2':
                 prompt_template = """다음 텍스트를 간결하게 요약하십시오. 텍스트의 요점을 다루는 글머리 기호로 응답을 반환합니다.
 
