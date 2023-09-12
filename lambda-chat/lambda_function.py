@@ -217,7 +217,7 @@ def get_answer_using_template_with_history(query, chat_memory):
     if pages >= 1:
         result = llm(CONDENSE_QUESTION_PROMPT.format(question=query, chat_history=chat_history))
     else:
-        result = llm(query)
+        result = llm(HUMAN_PROMPT+query+AI_PROMPT)
     # print('result: ', result)
 
     # add refrence
@@ -303,7 +303,7 @@ def get_answer_using_template(query):
     print('length of relevant_documents: ', len(relevant_documents))
 
     if(len(relevant_documents)==0):
-        return llm(query)
+        return llm(HUMAN_PROMPT+query+AI_PROMPT)
     else:
         print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
         print('----')
