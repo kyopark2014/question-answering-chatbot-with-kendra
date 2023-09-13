@@ -418,8 +418,8 @@ def lambda_handler(event, context):
 
                 if querySize<1000 and enableRAG=='true': 
                     if enableConversationMode == 'true':
-                        #msg = get_answer_using_ConversationalRetrievalChain(text, chat_memory)
-                        msg = get_answer_using_template_with_history(text, chat_memory)
+                        msg = get_answer_using_ConversationalRetrievalChain(text, chat_memory)
+                        #msg = get_answer_using_template_with_history(text, chat_memory)
 
                         storedMsg = str(msg).replace("\n"," ") 
                         chat_memory.save_context({"input": text}, {"output": storedMsg})  
