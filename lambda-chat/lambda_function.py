@@ -398,7 +398,7 @@ def lambda_handler(event, context):
     body = event['body']
     print('body: ', body)
 
-    global modelId, llm, kendra
+    global modelId, llm, map
     global enableConversationMode, enableReference, enableRAG  # debug
     
     # memory for retrival docs
@@ -412,7 +412,7 @@ def lambda_handler(event, context):
         chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
         map[userId] = chat_memory
         print('chat_memory does not exist. create new one!')
-        
+
     start = int(time.time())    
 
     msg = ""
