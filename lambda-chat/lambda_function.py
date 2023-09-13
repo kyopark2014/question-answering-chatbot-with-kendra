@@ -78,13 +78,9 @@ AI_PROMPT = "\n\nAssistant:"
 
 llm = Bedrock(model_id=modelId, client=boto3_bedrock, model_kwargs=parameters)
 
+map = dict()  # Conversation
+
 retriever = AmazonKendraRetriever(index_id=kendraIndex)
-
-# memory for retrival docs
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key="question", output_key='answer', human_prefix='Human', ai_prefix='Assistant')
-
-# memory for conversation
-chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
 
 # store document into Kendra
 def store_document(s3_file_name, requestId):
@@ -405,6 +401,18 @@ def lambda_handler(event, context):
     global modelId, llm, kendra
     global enableConversationMode, enableReference, enableRAG  # debug
     
+    # memory for retrival docs
+    #memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key="question", output_key='answer', human_prefix='Human', ai_prefix='Assistant')
+
+    # memory for conversation
+    if userId in map:
+        chat_memory = map[userId]
+        print('chat_memory exist. reuse it!')
+    else: 
+        chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
+        map[userId] = chat_memory
+        print('chat_memory does not exist. create new one!')
+        
     start = int(time.time())    
 
     msg = ""
