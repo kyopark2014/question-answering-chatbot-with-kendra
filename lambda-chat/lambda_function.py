@@ -266,7 +266,7 @@ def get_answer_using_ConversationalRetrievalChain(query, chat_memory):
         verbose=False, # for logging to stdout
         rephrase_question=True,  # to pass the new generated question to the combine_docs_chain
         
-        memory=memory,
+        #memory=memory,
         #max_tokens_limit=300,
         return_source_documents=True, # retrieved source
         return_generated_question=False, # generated question

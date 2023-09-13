@@ -22,7 +22,7 @@ const projectName = `bedrock-with-kendra`;
 const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "preview"; // aws or preview
 const bedrock_region = "us-east-1";  // "us-east-1" "us-west-2" 
-const enableConversationMode = 'false';
+const enableConversationMode = 'true';
 const enableReference = 'false';
 const enableRAG = 'true';
 
@@ -182,7 +182,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       description: 'lambda for chat api',
       functionName: `lambda-chat-api-for-${projectName}`,
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lambda-chat')),
-      timeout: cdk.Duration.seconds(600),
+      timeout: cdk.Duration.seconds(300),
       memorySize: 4096,
       role: roleLambda,
       environment: {
