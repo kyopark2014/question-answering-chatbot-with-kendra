@@ -450,7 +450,7 @@ def lambda_handler(event, context):
     body = event['body']
     print('body: ', body)
 
-    global modelId, llm, map, isReady
+    global modelId, llm, map, isReady, qa
     global enableConversationMode, enableReference, enableRAG  # debug
     
     # memory for conversation
