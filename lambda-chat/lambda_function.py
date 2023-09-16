@@ -37,6 +37,8 @@ print('enableConversationMode: ', enableConversationMode)
 enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
 
+conversationMothod = 'ConversationalRetrievalChain' # ConversationalRetrievalChain or PromptTemplate
+
 # Bedrock Contiguration
 bedrock_region = bedrock_region
 bedrock_config = {
@@ -294,74 +296,87 @@ def get_answer_using_template_with_history(query, chat_memory):
     else:
         return result
 
-def get_answer_using_ConversationalRetrievalChain(query, chat_memory):  
-    condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-    
-    {chat_history}
+# We are also providing a different chat history retriever which outputs the history as a Claude chat (ie including the \n\n)
+from langchain.schema import BaseMessage
+_ROLE_MAP = {"human": "\n\nHuman: ", "ai": "\n\nAssistant: "}
+def _get_chat_history(chat_history):
+    buffer = ""
+    for dialogue_turn in chat_history:
+        if isinstance(dialogue_turn, BaseMessage):
+            role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
+            buffer += f"\n{role_prefix}{dialogue_turn.content}"
+        elif isinstance(dialogue_turn, tuple):
+            human = "\n\nHuman: " + dialogue_turn[0]
+            ai = "\n\nAssistant: " + dialogue_turn[1]
+            buffer += "\n" + "\n".join([human, ai])
+        else:
+            raise ValueError(
+                f"Unsupported chat history format: {type(dialogue_turn)}."
+                f" Full chat history: {chat_history} "
+            )
+    return buffer
 
-    Human: {question}
+memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
+def create_ConversationalRetrievalChain():  
+    #condense_template = """Using the following conversation, answer friendly for the newest question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
     
-    Assistant:"""
+    #{chat_history}
+    
+    #Human: {question}
+
+    #Assistant:"""
+    condense_template = """To create condense_question, given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
+    Chat History:
+    {chat_history}
+    Follow Up Input: {question}
+    Standalone question:"""
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
+
+    # combine any retrieved documents.
+    #qa_prompt_template = """\n\nHuman: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+
+    #{context}
+
+    #Question: {question}
+    
+    #Assistant:"""    
+    
+    qa_prompt_template = """\n\nHuman:
+    Here is the context, inside <context></context> XML tags.    
+    Based on the context as below, answer the question. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+
+    <context>
+    {context}
+    </context>
+
+    Human: Use at maximum 5 sentences to answer the following question.
+    {question}
+
+    If the answer is not in the context say "주어진 내용에서 관련 답변을 찾을 수 없습니다."
+
+    Assistant:"""  
     
     qa = ConversationalRetrievalChain.from_llm(
         llm=llm, 
         retriever=retriever,         
         condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
-        chain_type='stuff', # 'refine'
+        #combine_docs_chain_kwargs={'prompt': qa_prompt_template},  
+
+        memory=memory_chain,
+        get_chat_history=_get_chat_history,
         verbose=False, # for logging to stdout
-        rephrase_question=True,  # to pass the new generated question to the combine_docs_chain
         
-        memory=memory,
         #max_tokens_limit=300,
-        return_source_documents=True, # retrieved source
+        chain_type='stuff', # 'refine'
+        rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
+        # return_source_documents=True, # retrieved source (not allowed)
         return_generated_question=False, # generated question
     )
-
-    # combine any retrieved documents.
-    prompt_template = """\n\nHuman: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-
-    {context}
-
-    Question: {question}
+    qa.combine_docs_chain.llm_chain.prompt = PromptTemplate.from_template(qa_prompt_template) 
     
-    Assistant:"""
-    qa.combine_docs_chain.llm_chain.prompt = PromptTemplate.from_template(prompt_template) 
-    
-    # extract chat history
-    chats = chat_memory.load_memory_variables({})
-    chat_history_all = chats['history']
-    print('chat_history_all: ', chat_history_all)
-
-    # use last two chunks of chat history
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000,chunk_overlap=0)
-    texts = text_splitter.split_text(chat_history_all) 
-
-    pages = len(texts)
-    print('pages: ', pages)
-
-    if pages >= 2:
-        chat_history = f"{texts[pages-2]} {texts[pages-1]}"
-    elif pages == 1:
-        chat_history = texts[0]
-    else:  # 0 page
-        chat_history = ""
-    print('chat_history:\n ', chat_history)
-
-    # make a question using chat history
-    result = qa({"question": query, "chat_history": chat_history})    
-    print('result: ', result)
-    
-    # get the reference
-    source_documents = result['source_documents']
-    print('source_documents: ', source_documents)
-
-    if len(source_documents)>=1 and enableReference == 'true':
-        reference = get_reference(source_documents)
-        #print('reference: ', reference)
-        return result['answer']+reference
-    else:
-        return result['answer']
+    return qa
 
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
@@ -437,9 +452,6 @@ def lambda_handler(event, context):
     global modelId, llm, map
     global enableConversationMode, enableReference, enableRAG  # debug
     
-    # memory for retrival docs
-    #memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key="question", output_key='answer', human_prefix='Human', ai_prefix='Assistant')
-
     # memory for conversation
     if userId in map:
         chat_memory = map[userId]
@@ -492,16 +504,28 @@ def lambda_handler(event, context):
 
                 if querySize<1000 and enableRAG=='true': 
                     if enableConversationMode == 'true':
-                        #msg = get_answer_using_ConversationalRetrievalChain(text, chat_memory)
-                        msg = get_answer_using_template_with_history(text, chat_memory)
+                        if conversationMothod == 'PromptTemplate':
+                            msg = get_answer_using_template_with_history(text, chat_memory)
+                                                              
+                            storedMsg = str(msg).replace("\n"," ") 
+                            chat_memory.save_context({"input": text}, {"output": storedMsg})                  
+                        else: # ConversationalRetrievalChain
+                            if isReady==False:
+                                isReady = True
+                                qa = create_ConversationalRetrievalChain()
 
-                        storedMsg = str(msg).replace("\n"," ") 
-                        chat_memory.save_context({"input": text}, {"output": storedMsg})  
+                            result = qa(text)
+                            print('result: ', result)    
+                            msg = result['answer']
+
+                            # extract chat history
+                            chats = memory_chain.load_memory_variables({})
+                            chat_history_all = chats['chat_history']
+                            print('chat_history_all: ', chat_history_all)
                     else:
                         msg = get_answer_using_template(text)
                 else:
                     msg = llm(HUMAN_PROMPT+text+AI_PROMPT)
-            #print('msg: ', msg)            
             
         elif type == 'document':
             object = body
