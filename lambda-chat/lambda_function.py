@@ -38,6 +38,7 @@ enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
 
 conversationMothod = 'ConversationalRetrievalChain' # ConversationalRetrievalChain or PromptTemplate
+isReady = False   
 
 # Bedrock Contiguration
 bedrock_region = bedrock_region
