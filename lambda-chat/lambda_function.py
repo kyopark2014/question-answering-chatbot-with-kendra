@@ -37,7 +37,7 @@ print('enableConversationMode: ', enableConversationMode)
 enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
 
-conversationMothod = 'ConversationalRetrievalChain' # ConversationalRetrievalChain or PromptTemplate
+conversationMothod = 'PromptTemplate' # ConversationalRetrievalChain or PromptTemplate
 isReady = False   
 
 # Bedrock Contiguration
@@ -531,7 +531,7 @@ def lambda_handler(event, context):
         elif type == 'document':
             object = body
                     
-            # stor the object into kendra
+            # store the object into kendra
             store_document(object, requestId)
 
             # summerization to show the content of the document
