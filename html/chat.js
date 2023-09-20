@@ -190,6 +190,13 @@ function addReceivedMessage(msg) {
     chatPanel.scrollTop = chatPanel.scrollHeight;  // scroll needs to move bottom
 }
 
+function addNotifyMessage(msg) {
+    index++;
+
+    msglist[index].innerHTML =  
+        `<div class="notification-text">${msg}</div>`;     
+}
+
 refreshChatWindow.addEventListener('click', function(){
     console.log('update chat window');
     // updateChatWindow(callee);
