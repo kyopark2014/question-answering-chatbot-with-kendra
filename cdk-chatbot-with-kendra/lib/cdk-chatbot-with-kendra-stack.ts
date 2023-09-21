@@ -19,7 +19,7 @@ const s3_prefix = 'docs';
 const endpoint_url = "https://prod.us-west-2.frontend.bedrock.aws.dev";
 const model_id = "anthropic.claude-v2"; // amazon.titan-tg1-large, amazon.titan-tg1-xlarge, anthropic.claude-v1, anthropic.claude-v2
 const projectName = `bedrock-with-kendra`;
-const bucketName = `storage-for-${projectName}-${region}-01`; 
+const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "preview"; // aws or preview
 const bedrock_region = "us-east-1";  // "us-east-1" "us-west-2" 
 const enableConversationMode = 'true';
@@ -68,15 +68,15 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     const callLogTableName = `db-call-log-for-${projectName}`;
     const callLogDataTable = new dynamodb.Table(this, `db-call-log-for-${projectName}`, {
       tableName: callLogTableName,
-      partitionKey: { name: 'user-id', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'request-id', type: dynamodb.AttributeType.STRING }, 
+      partitionKey: { name: 'user_id', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'request_time', type: dynamodb.AttributeType.STRING }, 
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     const callLogIndexName = `index-type-for-${projectName}`;
     callLogDataTable.addGlobalSecondaryIndex({ // GSI
       indexName: callLogIndexName,
-      partitionKey: { name: 'type', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'request_id', type: dynamodb.AttributeType.STRING },
     });
 
     // copy web application files into s3 bucket

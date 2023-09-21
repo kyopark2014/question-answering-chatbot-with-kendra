@@ -445,10 +445,12 @@ def get_answer_using_template(query):
         
 def lambda_handler(event, context):
     print(event)
-    userId  = event['user-id']
+    userId  = event['user_id']
     print('userId: ', userId)
-    requestId  = event['request-id']
+    requestId  = event['request_id']
     print('requestId: ', requestId)
+    requestTime  = event['request_time']
+    print('requestTime: ', requestTime)
     type  = event['type']
     print('type: ', type)
     body = event['body']
@@ -563,8 +565,9 @@ def lambda_handler(event, context):
         print('msg: ', msg)
 
         item = {
-            'user-id': {'S':userId},
-            'request-id': {'S':requestId},
+            'user_id': {'S':userId},
+            'request_id': {'S':requestId},
+            'request_time': {'S':requestTime},
             'type': {'S':type},
             'body': {'S':body},
             'msg': {'S':msg}
