@@ -382,7 +382,7 @@ function sendRequest(text, requestTime) {
         else if(xhr.readyState ===4 && xhr.status === 504) {
             console.log("response: " + xhr.readyState + ', xhr.status: '+xhr.status);
 
-            getResponse(requestId);
+            getResponse(userId, requestTime, requestId);
         }
         else {
             console.log("response: " + xhr.readyState + ', xhr.status: '+xhr.status);
@@ -422,7 +422,7 @@ function sendRequestForSummary(object, requestTime) {
         else if(xhr.readyState ===4 && xhr.status === 504) {
             console.log("response: " + xhr.readyState + ', xhr.status: '+xhr.status);
 
-            getResponse(requestId);
+            getResponse(userId, requestTime, requestId);
         }
         else {
             console.log("response: " + xhr.readyState + ', xhr.status: '+xhr.status);
@@ -446,7 +446,7 @@ function sendRequestForSummary(object, requestTime) {
 function delay(ms = 1000) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
-async function getResponse(requestId) {
+async function getResponse(userId, requestTime, requestId) {
     await delay(5000);
     
     let n = retryNum.get(requestId);
@@ -457,11 +457,11 @@ async function getResponse(requestId) {
     else {
         console.log('Retry!');
         retryNum.put(requestId, n-1);
-        sendRequestForRetry(requestId);
+        sendRequestForRetry(userId, requestTime, requestId);
     }    
 }
 
-function sendRequestForRetry(requestId) {
+function sendRequestForRetry(userId, requestTime, requestId) {
     const uri = "query";
     const xhr = new XMLHttpRequest();
 
@@ -480,13 +480,14 @@ function sendRequestForRetry(requestId) {
             else {
                 console.log('The request is not completed yet.');
 
-                getResponse(requestId);
+                getResponse(userId, requestTime, requestId);
             }
         }
     };
     
     var requestObj = {
-        "request_id": requestId,
+        "user_id": userId,
+        "request_time": requestTime
     }
     console.log("request: " + JSON.stringify(requestObj));
 
