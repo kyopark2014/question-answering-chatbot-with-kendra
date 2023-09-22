@@ -467,7 +467,7 @@ def load_chatHistory(userId, allowTime, chat_memory):
 
             chat_memory.save_context({"input": text}, {"output": msg})             
 
-def getAllowaTime():
+def getAllowTime():
     d = datetime.datetime.now() - datetime.timedelta(days = 2)
     timeStr = str(d)[0:19]
     print('allow time: ',timeStr)
@@ -499,7 +499,7 @@ def lambda_handler(event, context):
         map[userId] = chat_memory
         print('chat_memory does not exist. create new one!')
 
-        allowTime = getAllowaTime()
+        allowTime = getAllowTime()
         load_chatHistory(userId, allowTime, chat_memory)
 
     start = int(time.time())    
