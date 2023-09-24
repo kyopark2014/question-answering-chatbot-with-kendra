@@ -268,7 +268,7 @@ def get_answer_using_template_with_history(query, chat_memory):
     print('----')
     for i, rel_doc in enumerate(relevant_documents):
         body = rel_doc.page_content[rel_doc.page_content.rfind('Document Excerpt:')+18:len(rel_doc.page_content)]
-        # print('body: ', body)
+        print('body: ', body)
         
         chat_history = f"{chat_history}\nHuman: {body}"  # append relevant_documents 
         print(f'## Document {i+1}: {rel_doc.page_content}')
