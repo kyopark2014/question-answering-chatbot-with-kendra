@@ -528,6 +528,12 @@ def lambda_handler(event, context):
             elif text == 'disableRAG':
                 enableRAG = 'false'
                 msg  = "RAG is disabled"
+            elif text == 'clearMemory':
+                chat_memory = ""
+                chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
+                map[userId] = chat_memory
+                print('initiate the chat memory!')
+                msg  = "The chat memory was intialized in this session."
             else:
 
                 if querySize<1000 and enableRAG=='true': 
