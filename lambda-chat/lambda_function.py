@@ -272,7 +272,7 @@ def get_answer_using_template_with_history(query, chat_memory):
         
         chat_history = f"{chat_history}\nHuman: {body}"  # append relevant_documents 
         print(f'## Document {i+1}: {rel_doc.page_content}')
-        print('---')
+    print('---')
 
     print('chat_history:\n ', chat_history)
 
@@ -381,7 +381,7 @@ def get_answer_using_template(query):
         print('----')
         for i, rel_doc in enumerate(relevant_documents):
             print(f'## Document {i+1}: {rel_doc.page_content}.......')
-            print('---')
+        print('---')
 
         # check korean
         pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
