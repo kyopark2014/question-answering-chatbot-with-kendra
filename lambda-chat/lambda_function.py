@@ -264,8 +264,24 @@ def create_ConversationalRetrievalChain():
 
     PROMPT = get_prompt()
     
-    qa = ConversationalRetrievalChain.from_llm(
-        llm=llm, 
+    #qa = ConversationalRetrievalChain.from_llm(
+    #    llm=llm, 
+    #    retriever=retriever,    
+    #    question_generator = question_generator,     
+    #    #condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
+    #    combine_docs_chain_kwargs={'prompt': PROMPT},  
+
+    #    memory=memory_chain,
+    #    get_chat_history=_get_chat_history,
+    #    verbose=False, # for logging to stdout
+        
+    #    #max_tokens_limit=300,
+    #    chain_type='stuff', # 'refine'
+    #    rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
+    #    # return_source_documents=True, # retrieved source (not allowed)
+    #    return_generated_question=False, # generated question
+    #)
+    qa = ConversationalRetrievalChain(
         retriever=retriever,    
         question_generator = question_generator,     
         #condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
@@ -280,7 +296,7 @@ def create_ConversationalRetrievalChain():
         rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
         # return_source_documents=True, # retrieved source (not allowed)
         return_generated_question=False, # generated question
-    )
+    )    
    
     return qa
 
