@@ -20,6 +20,7 @@ from langchain.prompts import PromptTemplate
 from langchain.retrievers import AmazonKendraRetriever
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
+from langchain.chains import LLMChain
 
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
@@ -251,6 +252,31 @@ def get_prompt():
 
     return PromptTemplate.from_template(prompt_template)
 
+def get_prompt_using_languange_type(query):
+    # check korean
+    pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
+    word_kor = pattern_hangul.search(str(query))
+    print('word_kor: ', word_kor)
+        
+    if word_kor:
+        prompt_template = """다음은 Human과 Assistant의 친근한 대화입니다. Assistant은 상황에 맞는 구체적인 세부 정보를 충분히 제공합니다. Assistant는 모르는 질문을 받으면 솔직히 모른다고 말합니다.
+        
+        {context}
+            
+        Question: {question}
+
+        Assistant:"""
+    else:
+        prompt_template = """Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+            
+        {context}
+            
+        Question: {question}
+
+        Assistant:"""
+        
+    return PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+
 def create_ConversationalRetrievalChain():  
     condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
 
@@ -290,8 +316,7 @@ def extract_chat_history_from_memory(memory_chain):
 
     return chat_history
 
-def get_generated_prompt(query):
-    from langchain.chains import LLMChain
+def get_generated_prompt(query):    
     condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
 
     Chat History:
@@ -322,30 +347,7 @@ def get_answer_using_template(query):
         print('---')
 
         # check korean
-        pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
-        word_kor = pattern_hangul.search(str(query))
-        print('word_kor: ', word_kor)
-        
-        if word_kor:
-            prompt_template = """다음은 Human과 Assistant의 친근한 대화입니다. Assistant은 상황에 맞는 구체적인 세부 정보를 충분히 제공합니다. Assistant는 모르는 질문을 받으면 솔직히 모른다고 말합니다.
-        
-            {context}
-            
-            Question: {question}
-
-            Assistant:"""
-        else:
-            prompt_template = """Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-            
-            {context}
-            
-            Question: {question}
-
-            Assistant:"""
-        
-        PROMPT = PromptTemplate(
-            template=prompt_template, input_variables=["context", "question"]
-        )
+        PROMPT = get_prompt_using_languange_type(query)
 
         qa = RetrievalQA.from_chain_type(
             llm=llm,
