@@ -280,7 +280,7 @@ def create_ConversationalRetrievalChain():
 
     return qa
 
-def debug_get_generated_prompt(query):
+def get_generated_prompt(query):
     from langchain.chains import LLMChain
     condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
 
@@ -292,9 +292,22 @@ def debug_get_generated_prompt(query):
         template = condense_template, input_variables = ["chat_history", "question"]
     )
     
-    chat_history = _get_chat_history(memory_chain)
-    print('hisotry for debug: ', chat_history)
+    chat_history = []
+    
+    for dialogue_turn in memory_chain:
+        if isinstance(dialogue_turn, tuple):
+            human = "\n\nHuman: " + dialogue_turn[0]
+            ai = "\n\nAssistant: " + dialogue_turn[1]
+            print('humna: ', human)
+            print('ai: ', ai)
 
+            chat_history.append(f"Human:{human}\nAssistant:{ai}")
+        else:
+            raise ValueError(
+                f"Unsupported chat history format: {type(dialogue_turn)}."
+                f" Full chat history: {chat_history} "
+            )
+    
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
     return question_generator_chain.run({"question": query, "chat_history": chat_history})
 
@@ -474,7 +487,7 @@ def lambda_handler(event, context):
                 msg  = "The chat memory was intialized in this session."
             else:
                 if querySize<1000 and enableRAG=='true': 
-                    generated_prompt = debug_get_generated_prompt(text)
+                    generated_prompt = get_generated_prompt(text)
                     print('generated_prompt: ', generated_prompt)
 
                     if enableConversationMode == 'true':
