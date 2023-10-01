@@ -296,9 +296,8 @@ def get_generated_prompt(query):
     chat_history = []
 
     chats = memory_chain.load_memory_variables({})
-    chat_memory = chats['chat_history']
     
-    for dialogue_turn in chat_memory:
+    for dialogue_turn in chats['chat_history']:
         role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
 
         print('role_prefix: ', role_prefix)
