@@ -339,7 +339,7 @@ def get_answer_using_template(query):
         else:
             return result['result']
 
-def load_chatHistory(userId, allowTime, chat_memory):
+def load_chatHistory(userId, allowTime, memory_chain):
     dynamodb_client = boto3.client('dynamodb')
 
     response = dynamodb_client.query(
@@ -391,21 +391,28 @@ def lambda_handler(event, context):
     # memory for conversation
     if userId in map:
         memory_chain = map[userId]
-        print('chat_memory exist. reuse it!')
+        print('memory_chain exist. reuse it!')
     else: 
         memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
         map[userId] = memory_chain
-        print('chat_memory does not exist. create new one!')
+        print('memory_chain does not exist. create new one!')
 
         allowTime = getAllowTime()
         load_chatHistory(userId, allowTime, memory_chain)
 
-        #conversation = ConversationChain(llm=llm, verbose=False, memory=chat_memory)         
+        #conversation = ConversationChain(llm=llm, verbose=False, memory=memory_chain)         
 
     start = int(time.time())    
 
     msg = ""
     if type == 'text' and body[:11] == 'list models':
+        bedrock_client = boto3.client(
+            service_name='bedrock',
+            region_name=bedrock_region,
+        )
+        modelInfo = bedrock_client.list_foundation_models()    
+        print('models: ', modelInfo)
+
         msg = f"The list of models: \n"
         lists = modelInfo['modelSummaries']
         
@@ -414,7 +421,6 @@ def lambda_handler(event, context):
         
         msg += f"current model: {modelId}"
         print('model lists: ', msg)    
-
     else:             
         if type == 'text':
             text = body
