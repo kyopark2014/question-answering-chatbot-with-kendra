@@ -294,18 +294,21 @@ def get_generated_prompt(query):
     )
     
     chat_history = []
+
+    chats = memory_chain.load_memory_variables({})
+    chat_memory = chats['chat_history']
     
     buffer = ""
-    for dialogue_turn in memory_chain:
+    for dialogue_turn in chat_memory:
         if isinstance(dialogue_turn, BaseMessage):
             role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
             buffer += f"\n{role_prefix}{dialogue_turn.content}"
         elif isinstance(dialogue_turn, tuple):
-            print('dialogue_turn: ', dialogue_turn)
-        #    human = "\n\nHuman: " + dialogue_turn[0]
-        ##    ai = "\n\nAssistant: " + dialogue_turn[1]
-        #    print('humna: ', human)
-        #    print('ai: ', ai)
+        #    print('dialogue_turn: ', dialogue_turn)
+            human = "\n\nHuman: " + dialogue_turn[0]
+            ai = "\n\nAssistant: " + dialogue_turn[1]
+            print('humna: ', human)
+            print('ai: ', ai)
 
         #    chat_history.append(f"Human:{human}\nAssistant:{ai}")
         else:
