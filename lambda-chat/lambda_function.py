@@ -222,6 +222,7 @@ def get_reference(docs):
 from langchain.schema import BaseMessage
 _ROLE_MAP = {"human": "\n\nHuman: ", "ai": "\n\nAssistant: "}
 def _get_chat_history(chat_history):
+    print('_get_chat_history: ', chat_history)
     buffer = ""
     for dialogue_turn in chat_history:
         if isinstance(dialogue_turn, BaseMessage):
