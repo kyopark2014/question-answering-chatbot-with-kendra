@@ -288,10 +288,13 @@ def debug_get_generated_prompt(query):
     {chat_history}
     Follow Up Input: {question}
     Standalone question:"""
-    CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
-
+    CONDENSE_QUESTION_PROMPT = PromptTemplate(
+        template = condense_template, input_variables = ["chat_history", "question"]
+    )
+    
+    chat_history = []
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
-    return question_generator_chain.run({"question": query})
+    return question_generator_chain.run({"question": query, "chat_history": chat_history})
 
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
