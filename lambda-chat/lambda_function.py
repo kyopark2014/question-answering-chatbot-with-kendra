@@ -273,7 +273,7 @@ def create_ConversationalRetrievalChain():
         #max_tokens_limit=300,
         chain_type='stuff', # 'refine'
         rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
-        return_source_documents=True, # retrieved source (not allowed)
+        # return_source_documents=True, # retrieved source (not allowed)
         return_generated_question=False, # generated question
     )
    
@@ -460,12 +460,10 @@ def lambda_handler(event, context):
                             isReady = True
                             qa = create_ConversationalRetrievalChain()
 
-                        result = qa({"question": text, "chat_history": memory_chain})
-                        print('result: ', result['answer'])    
+                        result = qa({"question": text})
                         print('result: ', result)    
-                        #msg = result['answer']
-                        msg = "Check it"
-
+                        msg = result['answer']
+                        
                         # extract chat history for debugging
                         chats = memory_chain.load_memory_variables({})
                         chat_history_all = chats['chat_history']
