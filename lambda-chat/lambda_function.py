@@ -303,6 +303,8 @@ def get_generated_prompt(query):
         if isinstance(dialogue_turn, BaseMessage):
             role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
             buffer += f"\n{role_prefix}{dialogue_turn.content}"
+
+            print('role_prefix: ', role_prefix)
         elif isinstance(dialogue_turn, tuple):
         #    print('dialogue_turn: ', dialogue_turn)
             human = "\n\nHuman: " + dialogue_turn[0]
