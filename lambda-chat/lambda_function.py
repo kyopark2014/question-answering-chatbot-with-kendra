@@ -292,7 +292,9 @@ def debug_get_generated_prompt(query):
         template = condense_template, input_variables = ["chat_history", "question"]
     )
     
-    chat_history = []
+    chat_history = _get_chat_history(memory_chain)
+    print('hisotry for debug: ', chat_history)
+
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
     return question_generator_chain.run({"question": query, "chat_history": chat_history})
 
