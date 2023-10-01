@@ -222,7 +222,7 @@ def get_reference(docs):
 from langchain.schema import BaseMessage
 _ROLE_MAP = {"human": "\n\nHuman: ", "ai": "\n\nAssistant: "}
 def _get_chat_history(chat_history):
-    print('_get_chat_history: ', chat_history)
+    # print('_get_chat_history: ', chat_history)
     buffer = ""
     for dialogue_turn in chat_history:
         if isinstance(dialogue_turn, BaseMessage):
@@ -237,7 +237,7 @@ def _get_chat_history(chat_history):
                 f"Unsupported chat history format: {type(dialogue_turn)}."
                 f" Full chat history: {chat_history} "
             )
-    print('buffer: ', buffer)
+    # print('buffer: ', buffer)
     return buffer
 
 def get_prompt():
@@ -501,7 +501,7 @@ def lambda_handler(event, context):
                         #chat_history_all = chats['chat_history']
                         #print('chat_history_all: ', chat_history_all)
 
-                        chat_history = get_chat_history(memory_chain)
+                        chat_history = get_chat_history(result['chat_history'])
                         print('chat_history_all: ', chat_history)
                     else:
                         msg = get_answer_using_template(text)
