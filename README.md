@@ -349,6 +349,8 @@ else:
 
 ## 실행결과
 
+#### Q&A Chatbot 시험 결과
+
 [fsi_faq_ko.csv](https://github.com/kyopark2014/question-answering-chatbot-with-vector-store/blob/main/fsi_faq_ko.csv)을 다운로드 하고, 채팅창의 파일 아이콘을 선택하여 업로드합니다.
 
 ![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/b35681ea-0f94-49cc-96ca-64b27df0fad6)
@@ -356,15 +358,32 @@ else:
 
 채팅창에 "이체를 할수 없다고 나옵니다. 어떻게 해야 하나요?” 라고 입력하고 결과를 확인합니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/9caddb1c-5f57-41de-b1a8-7e60bbfe5601)
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/3a104bf3-8e86-4ea8-a67c-41a932abb807)
 
-채팅창에 "간편조회 서비스를 영문으로 사용할 수 있나요?” 라고 입력합니다. 이때의 결과는 ＂아니오”입니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/efbf1668-847b-4ef4-aa12-0e311ff3a632)
+채팅창에 "간편조회 서비스를 영문으로 사용할 수 있나요?” 라고 입력합니다. ＂아니오”라는 답을 기대했으나 찾지를 못합니다.
+
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/301b97d1-ab00-4ade-9799-af8a038e8d0a)
 
 채팅창에 "공동인증서 창구발급 서비스는 무엇인가요?"라고 입력하고 결과를 확인합니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/99c5abe5-9f21-495a-af5f-3726b55c416e)
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/10763bff-50d1-4921-843c-cd418b09dd8a)
+
+#### Chat Hisity 활용의 예
+
+chat history에 "안녕. 나는 서울에 살고 있어. "와 같이 입력하여 현재 서울에 살고 있음을 기록으로 남깁니다.
+
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/074fe1cc-71e0-4a6d-baff-a2a8c7577f5c)
+
+"내가 사는 도시에 대해 설명해줘."로 질문을 하면 chat history에서 서울에 대한 정보를 가져와서 아래와 같이 답변하게 됩니다. 
+
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/fe1c7be4-319c-445f-ae9c-46f61914c48a)
+
+이때의 로그를 보면 아래와 같이 입력한 질문("내가 사는 도시에 대해 설명해줘.")이 아래와 같이 "서울에 대해 설명해 주세요."와 같이 새로운 질문으로 변환된것을 알 수 있습니다.
+
+```text
+generated_prompt:   서울에 대해 설명해 주세요.
+```
 
 #### Chatbot 동작 시험시 주의할점
 
