@@ -294,8 +294,12 @@ def get_generated_prompt(query):
     
     chat_history = []
     
+    buffer = ""
     for dialogue_turn in memory_chain:
-        if isinstance(dialogue_turn, tuple):
+        if isinstance(dialogue_turn, BaseMessage):
+            role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
+            buffer += f"\n{role_prefix}{dialogue_turn.content}"
+        elif isinstance(dialogue_turn, tuple):
             print('dialogue_turn: ', dialogue_turn)
         #    human = "\n\nHuman: " + dialogue_turn[0]
         ##    ai = "\n\nAssistant: " + dialogue_turn[1]
@@ -308,6 +312,7 @@ def get_generated_prompt(query):
                 f"Unsupported chat history format: {type(dialogue_turn)}."
                 f" Full chat history: {chat_history} "
             )
+    print('buffer: ', buffer)
     
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
     return question_generator_chain.run({"question": query, "chat_history": chat_history})
