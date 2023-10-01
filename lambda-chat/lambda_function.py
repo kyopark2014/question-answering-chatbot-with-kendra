@@ -222,7 +222,7 @@ def get_reference(docs):
 from langchain.schema import BaseMessage
 _ROLE_MAP = {"human": "\n\nHuman: ", "ai": "\n\nAssistant: "}
 def _get_chat_history(chat_history):
-    # print('_get_chat_history: ', chat_history)
+    print('_get_chat_history: ', chat_history)
     buffer = ""
     for dialogue_turn in chat_history:
         if isinstance(dialogue_turn, BaseMessage):
@@ -237,7 +237,7 @@ def _get_chat_history(chat_history):
                 f"Unsupported chat history format: {type(dialogue_turn)}."
                 f" Full chat history: {chat_history} "
             )
-    # print('buffer: ', buffer)
+    print('buffer: ', buffer)
     return buffer
 
 def get_prompt():
@@ -281,13 +281,13 @@ def create_ConversationalRetrievalChain():
 
     return qa
 
-def get_chat_history(memory_chain):
+def load_chat_history():
     chat_history = []
     chats = memory_chain.load_memory_variables({})    
     for dialogue_turn in chats['chat_history']:
         role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
         chat_history.append(f"{role_prefix[2:]}{dialogue_turn.content}")
-    
+
     return chat_history
 
 def get_generated_prompt(query):
@@ -302,7 +302,8 @@ def get_generated_prompt(query):
         template = condense_template, input_variables = ["chat_history", "question"]
     )
     
-    chat_history = get_chat_history(memory_chain)
+    chat_history = load_chat_history()
+
     print('fffffchat_history: ', chat_history)
     
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
@@ -499,10 +500,11 @@ def lambda_handler(event, context):
                         # extract chat history for debugging
                         #chats = memory_chain.load_memory_variables({})
                         #chat_history_all = chats['chat_history']
-                        #print('chat_history_all: ', chat_history_all)
-
-                        chat_history = get_chat_history(result['chat_history'])
-                        print('chat_history_all: ', chat_history)
+                        chat_history_all = []
+                        for dialogue_turn in result['chat_history']:
+                            role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
+                            chat_history_all.append(f"{role_prefix[2:]}{dialogue_turn.content}")
+                        print('chat_history_all: ', chat_history_all)
                     else:
                         msg = get_answer_using_template(text)
                 else:
