@@ -302,7 +302,7 @@ def get_generated_prompt(query):
 
         print('role_prefix: ', role_prefix)
         print('dialogue_turn.content: ', dialogue_turn.content)
-        chat_history.append(f"{role_prefix}{dialogue_turn.content}\n")
+        chat_history.append(f"{role_prefix[2:]}{dialogue_turn.content}")
 
     print('fffffchat_history: ', chat_history)
     
