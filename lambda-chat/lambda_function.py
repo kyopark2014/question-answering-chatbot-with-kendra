@@ -258,33 +258,13 @@ def create_ConversationalRetrievalChain():
     Follow Up Input: {question}
     Standalone question:"""
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
-
-    from langchain.chains.llm import LLMChain
-    question_generator = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
-
+    
     PROMPT = get_prompt()
     
-    #qa = ConversationalRetrievalChain.from_llm(
-    #    llm=llm, 
-    #    retriever=retriever,    
-    #    question_generator = question_generator,     
-    #    #condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
-    #    combine_docs_chain_kwargs={'prompt': PROMPT},  
-
-    #    memory=memory_chain,
-    #    get_chat_history=_get_chat_history,
-    #    verbose=False, # for logging to stdout
-        
-    #    #max_tokens_limit=300,
-    #    chain_type='stuff', # 'refine'
-    #    rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
-    #    # return_source_documents=True, # retrieved source (not allowed)
-    #    return_generated_question=False, # generated question
-    #)
-    qa = ConversationalRetrievalChain(
+    qa = ConversationalRetrievalChain.from_llm(
+        llm=llm, 
         retriever=retriever,    
-        question_generator = question_generator,     
-        #condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
+        condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
         combine_docs_chain_kwargs={'prompt': PROMPT},  
 
         memory=memory_chain,
@@ -296,9 +276,22 @@ def create_ConversationalRetrievalChain():
         rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
         # return_source_documents=True, # retrieved source (not allowed)
         return_generated_question=False, # generated question
-    )    
-   
+    )
+
     return qa
+
+def debug_get_generated_prompt(query):
+    from langchain.chains import LLMChain
+    condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
+    Chat History:
+    {chat_history}
+    Follow Up Input: {question}
+    Standalone question:"""
+    CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
+
+    question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
+    return question_generator_chain.run()
 
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
@@ -476,6 +469,9 @@ def lambda_handler(event, context):
                 msg  = "The chat memory was intialized in this session."
             else:
                 if querySize<1000 and enableRAG=='true': 
+                    generated_prompt = debug_get_generated_prompt(text)
+                    print('generated_prompt: ', generated_prompt)
+
                     if enableConversationMode == 'true':
                         if isReady==False:
                             isReady = True
