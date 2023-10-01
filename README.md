@@ -385,10 +385,6 @@ chat history에 "안녕. 나는 서울에 살고 있어. "와 같이 입력하�
 generated_prompt:   서울에 대해 설명해 주세요.
 ```
 
-#### Chatbot 동작 시험시 주의할점
-
-일반적인 chatbot들은 지속적인 세션을 유지 관리하기 위해서는 websocket 등을 사용하지만, 여기서 사용한 Chatbot은 API를 테스트하기 위하여 RESTful API를 사용하고 있습니다. 따라서, LLM에서 응답이 일정시간(30초)이상 지연되는 경우에 브라우저에서 답변을 볼 수 없습니다. 따라서 긴 응답시간이 필요한 경우에 CloudWatch에서 [lambda-chat](./lambda-chat/lambda_function.py)의 로그를 확인하거나, DynamoDB에 저장된 call log를 확인합니다.
-
 
 ## Reference 
 
