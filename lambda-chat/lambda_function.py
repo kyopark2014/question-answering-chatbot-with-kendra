@@ -259,12 +259,16 @@ def create_ConversationalRetrievalChain():
     Standalone question:"""
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
 
+    from langchain.chains.llm import LLMChain
+    question_generator = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
+
     PROMPT = get_prompt()
     
     qa = ConversationalRetrievalChain.from_llm(
         llm=llm, 
-        retriever=retriever,         
-        condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
+        retriever=retriever,    
+        question_generator = question_generator,     
+        #condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
         combine_docs_chain_kwargs={'prompt': PROMPT},  
 
         memory=memory_chain,
