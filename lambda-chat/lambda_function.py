@@ -460,9 +460,10 @@ def lambda_handler(event, context):
                             isReady = True
                             qa = create_ConversationalRetrievalChain()
 
-                        result = qa(text)
+                        result = qa({"question": text})
                         print('result: ', result)    
-                        msg = result['answer']
+                        #msg = result['answer']
+                        msg = "Check it"
 
                         # extract chat history for debugging
                         chats = memory_chain.load_memory_variables({})
