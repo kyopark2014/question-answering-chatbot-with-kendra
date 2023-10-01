@@ -291,7 +291,7 @@ def debug_get_generated_prompt(query):
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
 
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
-    return question_generator_chain.run()
+    return question_generator_chain.run({"question": query})
 
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
