@@ -460,7 +460,8 @@ def lambda_handler(event, context):
                             isReady = True
                             qa = create_ConversationalRetrievalChain()
 
-                        result = qa({"question": text})
+                        result = qa({"question": text, "chat_history": memory_chain})
+                        print('result: ', result['answer'])    
                         print('result: ', result)    
                         #msg = result['answer']
                         msg = "Check it"
