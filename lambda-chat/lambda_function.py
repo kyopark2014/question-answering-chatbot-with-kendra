@@ -281,6 +281,15 @@ def create_ConversationalRetrievalChain():
 
     return qa
 
+def get_chat_history(memory_chain):
+    chat_history = []
+    chats = memory_chain.load_memory_variables({})    
+    for dialogue_turn in chats['chat_history']:
+        role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
+        chat_history.append(f"{role_prefix[2:]}{dialogue_turn.content}")
+    
+    return chat_history
+
 def get_generated_prompt(query):
     from langchain.chains import LLMChain
     condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
@@ -293,17 +302,7 @@ def get_generated_prompt(query):
         template = condense_template, input_variables = ["chat_history", "question"]
     )
     
-    chat_history = []
-
-    chats = memory_chain.load_memory_variables({})
-    
-    for dialogue_turn in chats['chat_history']:
-        role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
-
-        print('role_prefix: ', role_prefix)
-        print('dialogue_turn.content: ', dialogue_turn.content)
-        chat_history.append(f"{role_prefix[2:]}{dialogue_turn.content}")
-
+    chat_history = get_chat_history(memory_chain)
     print('fffffchat_history: ', chat_history)
     
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
@@ -498,9 +497,12 @@ def lambda_handler(event, context):
                         msg = result['answer']
                         
                         # extract chat history for debugging
-                        chats = memory_chain.load_memory_variables({})
-                        chat_history_all = chats['chat_history']
-                        print('chat_history_all: ', chat_history_all)
+                        #chats = memory_chain.load_memory_variables({})
+                        #chat_history_all = chats['chat_history']
+                        #print('chat_history_all: ', chat_history_all)
+
+                        chat_history = get_chat_history(memory_chain)
+                        print('chat_history_all: ', chat_history)
                     else:
                         msg = get_answer_using_template(text)
                 else:
