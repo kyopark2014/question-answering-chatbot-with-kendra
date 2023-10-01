@@ -296,12 +296,13 @@ def get_generated_prompt(query):
     
     for dialogue_turn in memory_chain:
         if isinstance(dialogue_turn, tuple):
-            human = "\n\nHuman: " + dialogue_turn[0]
-            ai = "\n\nAssistant: " + dialogue_turn[1]
-            print('humna: ', human)
-            print('ai: ', ai)
+            print('dialogue_turn: ', dialogue_turn)
+        #    human = "\n\nHuman: " + dialogue_turn[0]
+        ##    ai = "\n\nAssistant: " + dialogue_turn[1]
+        #    print('humna: ', human)
+        #    print('ai: ', ai)
 
-            chat_history.append(f"Human:{human}\nAssistant:{ai}")
+        #    chat_history.append(f"Human:{human}\nAssistant:{ai}")
         else:
             raise ValueError(
                 f"Unsupported chat history format: {type(dialogue_turn)}."
