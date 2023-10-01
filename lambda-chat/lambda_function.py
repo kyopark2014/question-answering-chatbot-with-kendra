@@ -37,7 +37,7 @@ print('enableConversationMode: ', enableConversationMode)
 enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
 
-conversationMothod = 'PromptTemplate' # ConversationalRetrievalChain or PromptTemplate
+conversationMothod = 'ManualIntegration' # ConversationalRetrievalChain or ManualIntegration
 isReady = False   
 
 # Bedrock Contiguration
@@ -222,7 +222,7 @@ def get_reference(docs):
 from langchain.schema import BaseMessage
 _ROLE_MAP = {"human": "\n\nHuman: ", "ai": "\n\nAssistant: "}
 def _get_chat_history(chat_history):
-    print('_get_chat_history: ', chat_history)
+    #print('_get_chat_history: ', chat_history)
     buffer = ""
     for dialogue_turn in chat_history:
         if isinstance(dialogue_turn, BaseMessage):
@@ -237,7 +237,7 @@ def _get_chat_history(chat_history):
                 f"Unsupported chat history format: {type(dialogue_turn)}."
                 f" Full chat history: {chat_history} "
             )
-    print('buffer: ', buffer)
+    #print('buffer: ', buffer)
     return buffer
 
 def get_prompt():
@@ -281,7 +281,7 @@ def create_ConversationalRetrievalChain():
 
     return qa
 
-def load_chat_history():
+def extract_chat_history_from_memory(memory_chain):
     chat_history = []
     chats = memory_chain.load_memory_variables({})    
     for dialogue_turn in chats['chat_history']:
@@ -302,9 +302,8 @@ def get_generated_prompt(query):
         template = condense_template, input_variables = ["chat_history", "question"]
     )
     
-    chat_history = load_chat_history()
-
-    print('fffffchat_history: ', chat_history)
+    chat_history = extract_chat_history_from_memory(memory_chain)
+    #print('chat_history: ', chat_history)
     
     question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
     return question_generator_chain.run({"question": query, "chat_history": chat_history})
@@ -485,26 +484,31 @@ def lambda_handler(event, context):
                 msg  = "The chat memory was intialized in this session."
             else:
                 if querySize<1000 and enableRAG=='true': 
-                    generated_prompt = get_generated_prompt(text)
-                    print('generated_prompt: ', generated_prompt)
-
                     if enableConversationMode == 'true':
-                        if isReady==False:
-                            isReady = True
-                            qa = create_ConversationalRetrievalChain()
-
-                        result = qa({"question": text})
-                        print('result: ', result)    
-                        msg = result['answer']
+                        if(conversationMothod == 'ConversationalRetrievalChain'):    
+                            if isReady==False:
+                                isReady = True
+                                qa = create_ConversationalRetrievalChain()
+                            
+                            result = qa({"question": text})
+                            print('result: ', result)    
+                            msg = result['answer']
                         
-                        # extract chat history for debugging
-                        #chats = memory_chain.load_memory_variables({})
-                        #chat_history_all = chats['chat_history']
-                        chat_history_all = []
-                        for dialogue_turn in result['chat_history']:
-                            role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
-                            chat_history_all.append(f"{role_prefix[2:]}{dialogue_turn.content}")
-                        print('chat_history_all: ', chat_history_all)
+                            chat_history_all = []  # debugging
+                            for dialogue_turn in result['chat_history']:
+                                role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
+                                chat_history_all.append(f"{role_prefix[2:]}{dialogue_turn.content}")
+                            print('chat_history_all: ', chat_history_all)
+                        else:
+                            generated_prompt = get_generated_prompt(text)
+                            print('generated_prompt: ', generated_prompt)
+                            msg = get_answer_using_template(generated_prompt)
+
+                            chat_history_all = extract_chat_history_from_memory(memory_chain) # debugging
+                            print('chat_history_all: ', chat_history_all)
+
+                            memory_chain.chat_memory.add_user_message(text)  # append new diaglog
+                            memory_chain.chat_memory.add_ai_message(msg)     
                     else:
                         msg = get_answer_using_template(text)
                 else:
