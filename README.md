@@ -137,25 +137,17 @@ Bedrock 접속을 위해 필요한 region name과 endpoint url을 지정하고, 
 from langchain.llms.bedrock import Bedrock
 
 bedrock_region = "us-west-2" 
-bedrock_config = {
-    "region_name":bedrock_region,
-    "endpoint_url":"https://prod.us-west-2.frontend.bedrock.aws.dev"
-}
-    
-if accessType=='aws': # internal user of aws
-    boto3_bedrock = boto3.client(
-        service_name='bedrock’,
-        region_name=bedrock_config["region_name"],
-        endpoint_url=bedrock_config["endpoint_url"],
-    )
-else: # preview user
-    boto3_bedrock = boto3.client(
-        service_name='bedrock’,
-        region_name=bedrock_config["region_name"],
-    )
 
-modelId = 'amazon.titan-tg1-large
-llm = Bedrock(model_id=modelId, client=boto3_bedrock) 
+boto3_bedrock = boto3.client(
+    service_name='bedrock’,
+    region_name=bedrock_region,
+)
+
+modelId = 'anthropic.claude-v2’
+llm = Bedrock(
+    model_id=modelId, 
+    client=boto3_bedrock, 
+    model_kwargs=parameters)
 ```
 
 접속에 대한 설정은 [cdk-chatbot-with-kendra-stack.ts](./cdk-chatbot-with-kendra/lib/cdk-chatbot-with-kendra-stack.ts)을 열어서 "accessType"을 아래와 같이 설정합니다. 
@@ -270,69 +262,48 @@ else:
 대화(Conversation)을 위해서는 Chat History를 이용한 Prompt Engineering이 필요합니다. 여기서는 Chat History를 위한 chat_memory와 RAG에서 document를 retrieval을 하기 위한 memory를 이용합니다.
 
 ```python
-# memory for conversation
-chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='AI')
-
-# memory for retrival docs
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, input_key="question", output_key='answer', human_prefix='Human', ai_prefix='AI')
+memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 ```
 
 Chat history를 위한 condense_template과 document retrieval시에 사용하는 prompt_template을 아래와 같이 정의하고, [ConversationalRetrievalChain](https://api.python.langchain.com/en/latest/chains/langchain.chains.conversational_retrieval.base.ConversationalRetrievalChain.html)을 이용하여 아래와 같이 구현합니다.
 
 
 ```python
-def get_answer_using_template_with_history(query, vectorstore, chat_memory):  
-    condense_template = """Given the following conversation and a follow up question, answer friendly. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+def create_ConversationalRetrievalChain(vectorstore):  
+    condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
     Chat History:
     {chat_history}
-    Human: {question}
-    AI:"""
+    Follow Up Input: {question}
+    Standalone question:"""
     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_template)
+
+    PROMPT = get_prompt()
     
     qa = ConversationalRetrievalChain.from_llm(
         llm=llm, 
         retriever=vectorstore.as_retriever(
-            search_type="similarity", search_kwargs={"k": 3}
+            search_type="similarity", 
+            search_kwargs={
+                "k": 3
+            }
         ),         
         condense_question_prompt=CONDENSE_QUESTION_PROMPT, # chat history and new question
-        chain_type='stuff', # 'refine'
+        combine_docs_chain_kwargs={'prompt': PROMPT},  
+
+        memory=memory_chain,
+        get_chat_history=_get_chat_history,
         verbose=False, # for logging to stdout
-        rephrase_question=True,  # to pass the new generated question to the combine_docs_chain
         
-        memory=memory,
         #max_tokens_limit=300,
-        return_source_documents=True, # retrieved source
+        chain_type='stuff', # 'refine'
+        rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
+        # return_source_documents=True, # retrieved source (not allowed)
         return_generated_question=False, # generated question
     )
-
-    # combine any retrieved documents.
-    prompt_template = """Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-
-    {context}
-
-    Question: {question}
-    AI:"""
-    qa.combine_docs_chain.llm_chain.prompt = PromptTemplate.from_template(prompt_template) 
     
-    # extract chat history
-    chats = chat_memory.load_memory_variables({})
-    chat_history = chats['history']
-    print('chat_history: ', chat_history)
+    return qa
 
-    # make a question using chat history
-    result = qa({"question": query, "chat_history": chat_history})    
-    print('result: ', result)    
-    
-    # get the reference
-    source_documents = result['source_documents']
-    print('source_documents: ', source_documents)
-
-    if len(source_documents)>=1 and enableReference == 'true':
-        reference = get_reference(source_documents)
-        #print('reference: ', reference)
-        return result['answer']+reference
-    else:
-        return result['answer']
 ```        
 
 
@@ -378,14 +349,22 @@ else:
 
 ## 실행결과
 
-파일을 올리면 먼저 파일을 S3에 올리고, 이후로 kendra에 등록합니다. 업로드 한 파일의 내용을 확인하기 위하여 아래와 같이 요약(Summaraztion)을 수행합니다.
+[fsi_faq_ko.csv](https://github.com/kyopark2014/question-answering-chatbot-with-vector-store/blob/main/fsi_faq_ko.csv)을 다운로드 하고, 채팅창의 파일 아이콘을 선택하여 업로드합니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/74768245-6738-4a14-b942-cb6a9f39d252)
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/b35681ea-0f94-49cc-96ca-64b27df0fad6)
 
-이후 아래와 같이 문서 내용에 대해 질문을 하면 답변을 얻을 수 있습니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/877d04a7-8190-43b5-a9fc-eab9e00ab990)
+채팅창에 "이체를 할수 없다고 나옵니다. 어떻게 해야 하나요?” 라고 입력하고 결과를 확인합니다.
 
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/9caddb1c-5f57-41de-b1a8-7e60bbfe5601)
+
+채팅창에 "간편조회 서비스를 영문으로 사용할 수 있나요?” 라고 입력합니다. 이때의 결과는 ＂아니오”입니다.
+
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/efbf1668-847b-4ef4-aa12-0e311ff3a632)
+
+채팅창에 "공동인증서 창구발급 서비스는 무엇인가요?"라고 입력하고 결과를 확인합니다.
+
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/99c5abe5-9f21-495a-af5f-3726b55c416e)
 
 #### Chatbot 동작 시험시 주의할점
 
