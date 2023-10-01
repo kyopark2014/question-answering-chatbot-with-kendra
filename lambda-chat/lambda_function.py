@@ -236,6 +236,7 @@ def _get_chat_history(chat_history):
                 f"Unsupported chat history format: {type(dialogue_turn)}."
                 f" Full chat history: {chat_history} "
             )
+    print('buffer: ', buffer)
     return buffer
 
 def get_prompt():
