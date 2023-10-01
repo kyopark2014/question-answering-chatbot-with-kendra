@@ -500,7 +500,7 @@ def lambda_handler(event, context):
                                 chat_history_all.append(f"{role_prefix[2:]}{dialogue_turn.content}")
                             print('chat_history_all: ', chat_history_all)
                         else:
-                            generated_prompt = get_generated_prompt(text)
+                            generated_prompt = get_generated_prompt(text) # generate new prompt using chat history
                             print('generated_prompt: ', generated_prompt)
                             msg = get_answer_using_template(generated_prompt)
 
