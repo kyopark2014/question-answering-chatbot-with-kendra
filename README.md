@@ -150,12 +150,6 @@ llm = Bedrock(
     model_kwargs=parameters)
 ```
 
-접속에 대한 설정은 [cdk-chatbot-with-kendra-stack.ts](./cdk-chatbot-with-kendra/lib/cdk-chatbot-with-kendra-stack.ts)을 열어서 "accessType"을 아래와 같이 설정합니다. 
-
-![noname](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/152b94ee-e20f-4307-901f-d9c2e004c103)
-
-
-
 ### Kendra
 
 ### 문서 등록
@@ -224,7 +218,7 @@ querySize = len(text)
 if querySize<1000: 
     msg = get_answer_using_template(text)
 else:
-    msg = llm(text)
+    msg = llm(HUMAN_PROMPT+text+AI_PROMPT)
 ```
 
 #### Prompt를 이용해 질문하기 
@@ -232,29 +226,42 @@ else:
 아래와 같이 일정 길이 이하의 query는 [get_relevant_documents()](https://python.langchain.com/docs/modules/data_connection/retrievers/)을 이용하여 [Kendra Retriever](https://python.langchain.com/docs/integrations/retrievers/amazon_kendra_retriever)로 관련된 문장들을 가져옵니다. 이때 관련된 문장이 없다면 bedrock의 llm()을 이용하여 결과를 얻고, kendra에 관련된 데이터가 있다면 아래와 같이 template을 이용하여 [RetrievalQA](https://python.langchain.com/docs/modules/chains/popular/vector_db_qa)로 query에 대한 응답을 구하여 결과로 전달합니다.
 
 ```python
-relevant_documents = retriever.get_relevant_documents(query)
+def get_answer_using_template(query):
+    relevant_documents = retriever.get_relevant_documents(query)
+    print('length of relevant_documents: ', len(relevant_documents))
 
-if (len(relevant_documents) == 0):
-    return llm(query)
-else:
-    prompt_template = """Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    if(len(relevant_documents)==0):
+        return llm(HUMAN_PROMPT+query+AI_PROMPT)
+    else:
+        print(f'{len(relevant_documents)} documents are fetched which are relevant to the query.')
+        print('----')
+        for i, rel_doc in enumerate(relevant_documents):
+            print(f'## Document {i+1}: {rel_doc.page_content}.......')
+        print('---')
 
-    { context }
+        # check korean
+        PROMPT = get_prompt_using_languange_type(query)
 
-    Question: { question }
-    Assistant: """
-    PROMPT = PromptTemplate(
-        template = prompt_template, input_variables = ["context", "question"]
-    )
+        qa = RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            retriever=retriever,
+            return_source_documents=True,
+            chain_type_kwargs={"prompt": PROMPT}
+        )
+        result = qa({"query": query})
+        print('result: ', result)
 
-    qa = RetrievalQA.from_chain_type(
-        llm = llm,
-        chain_type = "stuff",
-        retriever = retriever,
-        return_source_documents = True,
-        chain_type_kwargs = { "prompt": PROMPT }
-    )
-    result = qa({ "query": query })     
+        source_documents = result['source_documents']        
+        print('source_documents: ', source_documents)
+
+        if len(source_documents)>=1 and enableReference == 'true':
+            reference = get_reference(source_documents)
+            # print('reference: ', reference)
+
+            return result['result']+reference
+        else:
+            return result['result']    
 ```
 
 #### Conversation
@@ -266,7 +273,6 @@ memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messag
 ```
 
 Chat history를 위한 condense_template과 document retrieval시에 사용하는 prompt_template을 아래와 같이 정의하고, [ConversationalRetrievalChain](https://api.python.langchain.com/en/latest/chains/langchain.chains.conversational_retrieval.base.ConversationalRetrievalChain.html)을 이용하여 아래와 같이 구현합니다.
-
 
 ```python
 def create_ConversationalRetrievalChain(vectorstore):  
@@ -298,13 +304,35 @@ def create_ConversationalRetrievalChain(vectorstore):
         #max_tokens_limit=300,
         chain_type='stuff', # 'refine'
         rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
-        # return_source_documents=True, # retrieved source (not allowed)
         return_generated_question=False, # generated question
     )
     
     return qa
-
 ```        
+
+History를 이용하여 새로운 질문을 생성한 후에 RetrievalQA을 사용하면 전체적인 과정을 좀 더 정확히 파악할 수 있습니다. 
+
+```python
+generated_prompt = get_generated_prompt(text) # generate new prompt using chat history
+msg = get_answer_using_template(generated_prompt)
+
+def get_generated_prompt(query):    
+    condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
+    Chat History:
+    {chat_history}
+    Follow Up Input: {question}
+    Standalone question:"""
+    CONDENSE_QUESTION_PROMPT = PromptTemplate(
+        template = condense_template, input_variables = ["chat_history", "question"]
+    )
+    
+    chat_history = extract_chat_history_from_memory(memory_chain)
+    #print('chat_history: ', chat_history)
+    
+    question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
+    return question_generator_chain.run({"question": query, "chat_history": chat_history})
+```
 
 
 #### Metadata에서 Reference 추출하기 
