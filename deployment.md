@@ -16,8 +16,6 @@
 
 여기서는 [Cloud9](https://aws.amazon.com/ko/cloud9/)에서 [AWS CDK](https://aws.amazon.com/ko/cdk/)를 이용하여 인프라를 설치합니다. 현재 Seoul Region에 Kendra 미지원이라서 가장 가까운 Tokyo Region에서 실습을 수행합니다.
 
-Kendra를 설치하기 위해서는 [IAM Identity Center - Tokyo](https://ap-northeast-1.console.aws.amazon.com/singlesignon/home?region=ap-northeast-1#!/instances/users)에서 아래와 같이 최소 하나의 계정이 생성되어 있어야 합니다. 만약 계정이 생성되어 있지 않다면 신규로 생성후 다음 단계를 진행하시기 바랍니다.
-
 ![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/8d96153c-98b7-4522-bc31-254d246bc488)
 
 
