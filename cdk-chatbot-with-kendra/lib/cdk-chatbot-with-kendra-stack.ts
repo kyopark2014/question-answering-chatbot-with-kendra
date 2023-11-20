@@ -99,7 +99,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     new cdk.CfnOutput(this, `distributionDomainName-for-${projectName}`, {
       value: distribution.domainName,
       description: 'The domain name of the Distribution',
-    });
+    }); 
 
     // Kendra    
     const roleKendra = new iam.Role(this, `role-kendra-for-${projectName}`, {
@@ -207,7 +207,66 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         // dataTraceEnabled: true,
       },
     });  
-    
+
+    // Lambda for chat using langchain (container)
+    const lambdaChatApi = new lambda.DockerImageFunction(this, `lambda-chat-for-${projectName}`, {
+      description: 'lambda for chat api',
+      functionName: `lambda-chat-api-for-${projectName}`,
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lambda-chat')),
+      timeout: cdk.Duration.seconds(300),
+      memorySize: 4096,
+      role: roleLambda,
+      environment: {
+        bedrock_region: bedrock_region,
+        kendra_region: kendra_region,
+        endpoint_url: endpoint_url,
+        model_id: model_id,
+        s3_bucket: s3Bucket.bucketName,
+        s3_prefix: s3_prefix,
+        callLogTableName: callLogTableName,
+        kendraIndex: cfnIndex.attrId,
+        roleArn: roleLambda.roleArn,
+        accessType: accessType,
+        enableConversationMode: enableConversationMode,
+        enableReference: enableReference,
+        enableRAG: enableRAG
+      }
+    });     
+    lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
+    s3Bucket.grantRead(lambdaChatApi); // permission for s3
+    callLogDataTable.grantReadWriteData(lambdaChatApi); // permission for dynamo
+
+    // POST method
+    const chat = api.root.addResource('chat');
+    chat.addMethod('POST', new apiGateway.LambdaIntegration(lambdaChatApi, {
+      passthroughBehavior: apiGateway.PassthroughBehavior.WHEN_NO_TEMPLATES,
+      credentialsRole: role,
+      integrationResponses: [{
+        statusCode: '200',
+      }], 
+      proxy:false, 
+    }), {
+      methodResponses: [   // API Gateway sends to the client that called a method.
+        {
+          statusCode: '200',
+          responseModels: {
+            'application/json': apiGateway.Model.EMPTY_MODEL,
+          }, 
+        }
+      ]
+    }); 
+
+    if(debug) {
+      new cdk.CfnOutput(this, `apiUrl-chat-for-${projectName}`, {
+        value: api.url,
+        description: 'The url of API Gateway',
+      }); 
+      new cdk.CfnOutput(this, `curlUrl-chat-for-${projectName}`, {
+        value: "curl -X POST "+api.url+'chat -H "Content-Type: application/json" -d \'{"text":"who are u?"}\'',
+        description: 'Curl commend of API Gateway',
+      }); 
+    }
+
     // cloudfront setting for api gateway of stable diffusion
     distribution.addBehavior("/chat", new origins.RestApiOrigin(api), {
       cachePolicy: cloudFront.CachePolicy.CACHING_DISABLED,
@@ -397,78 +456,5 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       allowedMethods: cloudFront.AllowedMethods.ALLOW_ALL,  
       viewerProtocolPolicy: cloudFront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
     });
-
-    // Lambda for chat using langchain (container)
-    const lambdaChatApi = new lambda.DockerImageFunction(this, `lambda-chat-for-${projectName}`, {
-      description: 'lambda for chat api',
-      functionName: `lambda-chat-api-for-${projectName}`,
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lambda-chat')),
-      timeout: cdk.Duration.seconds(300),
-      memorySize: 4096,
-      role: roleLambda,
-      environment: {
-        bedrock_region: bedrock_region,
-        kendra_region: kendra_region,
-        endpoint_url: endpoint_url,
-        model_id: model_id,
-        s3_bucket: s3Bucket.bucketName,
-        s3_prefix: s3_prefix,
-        callLogTableName: callLogTableName,
-        path: 'https://'+distribution.domainName+'/docs/',   
-        kendraIndex: cfnIndex.attrId,
-        roleArn: roleLambda.roleArn,
-        accessType: accessType,
-        enableConversationMode: enableConversationMode,
-        enableReference: enableReference,
-        enableRAG: enableRAG
-      }
-    });     
-    lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
-    s3Bucket.grantRead(lambdaChatApi); // permission for s3
-    callLogDataTable.grantReadWriteData(lambdaChatApi); // permission for dynamo
-
-    // POST method
-    const chat = api.root.addResource('chat');
-    chat.addMethod('POST', new apiGateway.LambdaIntegration(lambdaChatApi, {
-      passthroughBehavior: apiGateway.PassthroughBehavior.WHEN_NO_TEMPLATES,
-      credentialsRole: role,
-      integrationResponses: [{
-        statusCode: '200',
-      }], 
-      proxy:false, 
-    }), {
-      methodResponses: [   // API Gateway sends to the client that called a method.
-        {
-          statusCode: '200',
-          responseModels: {
-            'application/json': apiGateway.Model.EMPTY_MODEL,
-          }, 
-        }
-      ]
-    }); 
-
-    if(debug) {
-      new cdk.CfnOutput(this, `apiUrl-chat-for-${projectName}`, {
-        value: api.url,
-        description: 'The url of API Gateway',
-      }); 
-      new cdk.CfnOutput(this, `curlUrl-chat-for-${projectName}`, {
-        value: "curl -X POST "+api.url+'chat -H "Content-Type: application/json" -d \'{"text":"who are u?"}\'',
-        description: 'Curl commend of API Gateway',
-      }); 
-    }
   }
 }
-
-/*
-export class componentDeployment extends cdk.Stack {
-  constructor(scope: Construct, id: string, appId: string, props?: cdk.StackProps) {    
-    super(scope, id, props);
-
-    new apigatewayv2.CfnDeployment(this, `api-deployment-of-${projectName}`, {
-      apiId: appId,
-      description: "deploy api gateway using websocker",  // $default
-      stageName: stage
-    });   
-  }
-} */
