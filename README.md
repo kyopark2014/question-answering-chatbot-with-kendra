@@ -436,16 +436,20 @@ else:
 
 채팅창에 "이체를 할수 없다고 나옵니다. 어떻게 해야 하나요?” 라고 입력하고 결과를 확인합니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/3a104bf3-8e86-4ea8-a67c-41a932abb807)
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/f51a0cbf-a337-44ed-9a14-dd46e7fa7a6c)
 
 
-채팅창에 "간편조회 서비스를 영문으로 사용할 수 있나요?” 라고 입력합니다. ＂아니오”라는 답을 기대했으나 찾지를 못합니다.
+채팅창에 "간편조회 서비스를 영문으로 사용할 수 있나요?” 라고 입력합니다. "영문뱅킹에서는 간편조회서비스 이용불가"하므로 좀더 자세한 설명을 얻었습니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/301b97d1-ab00-4ade-9799-af8a038e8d0a)
+
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/28b5c489-fa35-4896-801c-4609ebb68266)
+
 
 채팅창에 "공동인증서 창구발급 서비스는 무엇인가요?"라고 입력하고 결과를 확인합니다.
 
-![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/10763bff-50d1-4921-843c-cd418b09dd8a)
+![image](https://github.com/kyopark2014/question-answering-chatbot-with-kendra/assets/52392004/a0024c28-a0a4-4f18-b459-a9737c95db77)
+
+
 
 #### Chat Hisity 활용의 예
 
