@@ -21,7 +21,8 @@ const model_id = "anthropic.claude-v2"; // amazon.titan-tg1-large, amazon.titan-
 const projectName = `bedrock-with-kendra`;
 const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "preview"; // aws or preview
-const bedrock_region = "us-east-1";  // "us-east-1" "us-west-2" 
+const bedrock_region = "us-east-1";  
+const kendra_region = "us-east-1";  
 const enableConversationMode = 'true';
 const enableReference = 'false';
 const enableRAG = 'true';
@@ -187,11 +188,13 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
       role: roleLambda,
       environment: {
         bedrock_region: bedrock_region,
+        kendra_region: kendra_region,
         endpoint_url: endpoint_url,
         model_id: model_id,
         s3_bucket: s3Bucket.bucketName,
         s3_prefix: s3_prefix,
         callLogTableName: callLogTableName,
+        path: 'https://'+distribution.domainName+'/docs/',   
         kendraIndex: cfnIndex.attrId,
         roleArn: roleLambda.roleArn,
         accessType: accessType,

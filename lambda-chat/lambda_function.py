@@ -21,13 +21,15 @@ from langchain.retrievers import AmazonKendraRetriever
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
+from botocore.config import Config
 
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
 callLogTableName = os.environ.get('callLogTableName')
 endpoint_url = os.environ.get('endpoint_url')
-bedrock_region = os.environ.get('bedrock_region')
+bedrock_region = os.environ.get('bedrock_region', 'us-east-2')
+kendra_region = os.environ.get('kendra_region', 'us-east-1')
 kendraIndex = os.environ.get('kendraIndex')
 roleArn = os.environ.get('roleArn')
 modelId = os.environ.get('model_id')
@@ -37,6 +39,7 @@ enableConversationMode = os.environ.get('enableConversationMode', 'enabled')
 print('enableConversationMode: ', enableConversationMode)
 enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
+path = os.environ.get('path')
 
 conversationMothod = 'ManualIntegration' # ConversationalRetrievalChain or ManualIntegration
 isReady = False   
@@ -45,6 +48,11 @@ isReady = False
 boto3_bedrock = boto3.client(
     service_name='bedrock-runtime',
     region_name=bedrock_region,
+    config=Config(
+        retries = {
+            'max_attempts': 30
+        }            
+    )
 )
     
 HUMAN_PROMPT = "\n\nHuman:"
@@ -76,25 +84,64 @@ llm = Bedrock(
 
 map = dict() # Conversation
 
-retriever = AmazonKendraRetriever(index_id=kendraIndex)
+retriever = AmazonKendraRetriever(
+    index_id=kendraIndex, 
+    top_k=5, 
+    region_name=kendra_region,
+    attribute_filter = {
+        "EqualsTo": {      
+            "Key": "_language_code",
+            "Value": {
+                "StringValue": "ko"
+            }
+        },
+    },
+)
 
 # store document into Kendra
-def store_document(s3_file_name, requestId):
-    documentInfo = {
-        "S3Path": {
-            "Bucket": s3_bucket,
-            "Key": s3_prefix+'/'+s3_file_name
-        },
-        "Title": s3_file_name,
-        "Id": requestId
-    }
+def store_document(path, s3_file_name, requestId):
+    source_uri = path+s3_file_name
+
+    file_type = (s3_file_name[s3_file_name.rfind('.')+1:len(s3_file_name)]).upper()
+    print('file_type: ', file_type)
 
     documents = [
-        documentInfo
+        {
+            "Id": requestId,
+            "Title": s3_file_name,
+            "S3Path": {
+                "Bucket": s3_bucket,
+                "Key": s3_prefix+'/'+s3_file_name
+            },
+            "Attributes": [
+                {
+                    "Key": '_source_uri',
+                    'Value': {
+                        'StringValue': source_uri
+                    }
+                },
+                {
+                    "Key": '_language_code',
+                    'Value': {
+                        'StringValue': "ko"
+                    }
+                },
+            ],
+            "ContentType": file_type
+        }
     ]
+    print('document info: ', documents)
 
-    kendra = boto3.client("kendra")
-    result = kendra.batch_put_document(
+    kendra_client = boto3.client(
+        service_name='kendra', 
+        region_name=kendra_region,
+        config = Config(
+            retries=dict(
+                max_attempts=10
+            )
+        )
+    )
+    result = kendra_client.batch_put_document(
         Documents = documents,
         IndexId = kendraIndex,
         RoleArn = roleArn
@@ -316,7 +363,7 @@ def extract_chat_history_from_memory(memory_chain):
 
     return chat_history
 
-def get_generated_prompt(query):    
+def get_revised_question(query):    
     condense_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
 
     Chat History:
@@ -330,8 +377,8 @@ def get_generated_prompt(query):
     chat_history = extract_chat_history_from_memory(memory_chain)
     #print('chat_history: ', chat_history)
     
-    question_generator_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
-    return question_generator_chain.run({"question": query, "chat_history": chat_history})
+    condense_prompt_chain = LLMChain(llm=llm, prompt=CONDENSE_QUESTION_PROMPT)
+    return condense_prompt_chain.run({"question": query, "chat_history": chat_history})
 
 def get_answer_using_template(query):
     relevant_documents = retriever.get_relevant_documents(query)
@@ -502,9 +549,9 @@ def lambda_handler(event, context):
                                 chat_history_all.append(f"{role_prefix[2:]}{dialogue_turn.content}")
                             print('chat_history_all: ', chat_history_all)
                         else:
-                            generated_prompt = get_generated_prompt(text) # generate new prompt using chat history
-                            print('generated_prompt: ', generated_prompt)
-                            msg = get_answer_using_template(generated_prompt)
+                            revised_question = get_revised_question(text) # generate new prompt using chat history
+                            print('revised_question: ', revised_question)
+                            msg = get_answer_using_template(revised_question)
 
                             chat_history_all = extract_chat_history_from_memory(memory_chain) # debugging
                             print('chat_history_all: ', chat_history_all)
@@ -520,7 +567,7 @@ def lambda_handler(event, context):
             object = body
                     
             # store the object into kendra
-            store_document(object, requestId)
+            store_document(path, object, requestId)
 
             # summerization to show the content of the document
             file_type = object[object.rfind('.')+1:len(object)]
