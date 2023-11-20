@@ -28,8 +28,8 @@ s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
 callLogTableName = os.environ.get('callLogTableName')
 endpoint_url = os.environ.get('endpoint_url')
-bedrock_region = os.environ.get('bedrock_region', 'us-east-2')
-kendra_region = os.environ.get('kendra_region', 'us-east-1')
+bedrock_region = os.environ.get('bedrock_region')
+kendra_region = os.environ.get('kendra_region')
 kendraIndex = os.environ.get('kendraIndex')
 roleArn = os.environ.get('roleArn')
 modelId = os.environ.get('model_id')
@@ -78,7 +78,6 @@ parameters = get_parameter(modelId)
 llm = Bedrock(
     model_id=modelId, 
     client=boto3_bedrock, 
-    #streaming=True,
     model_kwargs=parameters)
 
 map = dict() # Conversation
@@ -372,6 +371,7 @@ def get_revised_question(query):
     return condense_prompt_chain.run({"question": query, "chat_history": chat_history})
 
 def get_answer_using_template(query):
+    # for debugg
     relevant_documents = retriever.get_relevant_documents(query)
     print('length of relevant_documents: ', len(relevant_documents))
 
@@ -384,29 +384,29 @@ def get_answer_using_template(query):
             print(f'## Document {i+1}: {rel_doc.page_content}.......')
         print('---')
 
-        # check korean
-        PROMPT = get_prompt_using_languange_type(query)
+    # check korean
+    PROMPT = get_prompt_using_languange_type(query)
 
-        qa = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=retriever,
-            return_source_documents=True,
-            chain_type_kwargs={"prompt": PROMPT}
-        )
-        result = qa({"query": query})
-        print('result: ', result)
+    qa = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=retriever,
+        return_source_documents=True,
+        chain_type_kwargs={"prompt": PROMPT}
+    )
+    result = qa({"query": query})
+    print('result: ', result)
 
-        source_documents = result['source_documents']        
-        print('source_documents: ', source_documents)
+    source_documents = result['source_documents']        
+    print('source_documents: ', source_documents)
 
-        if len(source_documents)>=1 and enableReference == 'true':
-            reference = get_reference(source_documents)
-            # print('reference: ', reference)
+    if len(source_documents)>=1 and enableReference == 'true':
+        reference = get_reference(source_documents)
+        # print('reference: ', reference)
 
-            return result['result']+reference
-        else:
-            return result['result']
+        return result['result']+reference
+    else:
+        return result['result']
 
 def load_chatHistory(userId, allowTime, memory_chain):
     dynamodb_client = boto3.client('dynamodb')
@@ -517,9 +517,9 @@ def lambda_handler(event, context):
                 enableRAG = 'false'
                 msg  = "RAG is disabled"
             elif text == 'clearMemory':
-                memory_chain = ""
-                memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+                memory_chain.clear()
                 map[userId] = memory_chain
+                memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
                 print('initiate the chat memory!')
                 msg  = "The chat memory was intialized in this session."
             else:
