@@ -194,7 +194,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         s3_bucket: s3Bucket.bucketName,
         s3_prefix: s3_prefix,
         callLogTableName: callLogTableName,
-        path: 'https://'+distribution.domainName+'/docs/',   
+        // path: 'https://'+distribution.domainName+'/docs/',   
         kendraIndex: cfnIndex.attrId,
         roleArn: roleLambda.roleArn,
         accessType: accessType,
