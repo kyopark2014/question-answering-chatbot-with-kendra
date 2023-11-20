@@ -139,8 +139,13 @@ from langchain.llms.bedrock import Bedrock
 bedrock_region = "us-west-2" 
 
 boto3_bedrock = boto3.client(
-    service_name='bedrock’,
+    service_name='bedrock-runtime',
     region_name=bedrock_region,
+    config=Config(
+        retries = {
+            'max_attempts': 30
+        }            
+    )
 )
 
 modelId = 'anthropic.claude-v2’
@@ -157,20 +162,36 @@ llm = Bedrock(
 S3에 저장된 문서를 kendra로 전달하기 위하여, 아래와 같이 문서에 대한 S3 정보를 kendra의 [batch_put_document()](https://docs.aws.amazon.com/kendra/latest/APIReference/API_BatchPutDocument.html)을 이용하여 전달합니다. 
 
 ```python
-documentInfo = {
-    "S3Path": {
-        "Bucket": s3_bucket,
-        "Key": s3_prefix+'/'+s3_file_name
-    },
-    "Title": "Document from client",
-    "Id": requestId
-}
-
 documents = [
-    documentInfo
+    {
+        "Id": requestId,
+        "Title": s3_file_name,
+        "S3Path": {
+            "Bucket": s3_bucket,
+            "Key": s3_prefix+'/'+s3_file_name
+        },
+        "Attributes": [
+            {
+                "Key": '_language_code',
+                'Value': {
+                    'StringValue': "ko"
+                }
+            },
+        ],
+        "ContentType": file_type
+    }
 ]
 
-kendra = boto3.client("kendra")
+kendra_client = boto3.client(
+    service_name='kendra', 
+    region_name=kendra_region,
+    config = Config(
+        retries=dict(
+            max_attempts=10
+        )
+    )
+)
+
 kendra.batch_put_document(
     Documents = documents,
     IndexId = kendraIndex,
