@@ -40,7 +40,7 @@ print('enableConversationMode: ', enableConversationMode)
 enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
 
-conversationMothod = 'ManualIntegration' # ConversationalRetrievalChain or ManualIntegration
+conversationMothod = 'ConversationalRetrievalChain' # ConversationalRetrievalChain or RetrievalQA
 isReady = False   
 
 # Bedrock Contiguration
@@ -539,7 +539,7 @@ def lambda_handler(event, context):
                                 role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
                                 chat_history_all.append(f"{role_prefix[2:]}{dialogue_turn.content}")
                             print('chat_history_all: ', chat_history_all)
-                        else:
+                        else:  # RetrievalQA
                             revised_question = get_revised_question(text) # generate new prompt using chat history
                             print('revised_question: ', revised_question)
                             msg = get_answer_using_template(revised_question)
