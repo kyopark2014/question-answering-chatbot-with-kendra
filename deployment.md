@@ -50,16 +50,6 @@ git clone https://github.com/kyopark2014/question-answering-chatbot-with-kendra
 cd question-answering-chatbot-with-kendra/cdk-chatbot-with-kendra/ && npm install
 ```
 
-6) bedrock-sdk를 설치합니다.
-
-```java
-cd ../lambda-chat
-curl https://d2eo22ngex1n9g.cloudfront.net/Documentation/SDK/bedrock-python-sdk.zip --output bedrock-python-sdk.zip
-unzip bedrock-python-sdk.zip -d bedrock-sdk
-rm bedrock-python-sdk.zip
-cd ../cdk-chatbot-with-kendra/
-```
-
 6) CDK 사용을 위해 Boostraping을 수행합니다.
 
 아래 명령어로 Account ID를 확인합니다.
