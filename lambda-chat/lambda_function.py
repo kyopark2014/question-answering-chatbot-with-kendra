@@ -40,7 +40,7 @@ print('enableConversationMode: ', enableConversationMode)
 enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
 
-conversationMothod = 'ConversationalRetrievalChain' # ConversationalRetrievalChain or RetrievalQA
+conversationMothod = os.environ.get('conversationMothod')  # ConversationalRetrievalChain or RetrievalQA
 isReady = False   
 
 # Bedrock Contiguration

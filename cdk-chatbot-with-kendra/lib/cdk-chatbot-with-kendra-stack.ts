@@ -26,6 +26,7 @@ const kendra_region = "ap-northeast-1";
 const enableConversationMode = 'true';
 const enableReference = 'false';
 const enableRAG = 'true';
+const conversationMothod = 'RetrievalQA';
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -229,7 +230,8 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
         accessType: accessType,
         enableConversationMode: enableConversationMode,
         enableReference: enableReference,
-        enableRAG: enableRAG
+        enableRAG: enableRAG,
+        conversationMothod: conversationMothod
       }
     });     
     lambdaChatApi.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
