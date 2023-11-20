@@ -39,7 +39,6 @@ enableConversationMode = os.environ.get('enableConversationMode', 'enabled')
 print('enableConversationMode: ', enableConversationMode)
 enableReference = os.environ.get('enableReference', 'false')
 enableRAG = os.environ.get('enableRAG', 'true')
-path = os.environ.get('path')
 
 conversationMothod = 'ManualIntegration' # ConversationalRetrievalChain or ManualIntegration
 isReady = False   
@@ -99,9 +98,7 @@ retriever = AmazonKendraRetriever(
 )
 
 # store document into Kendra
-def store_document(path, s3_file_name, requestId):
-    source_uri = path+s3_file_name
-
+def store_document(s3_file_name, requestId):
     file_type = (s3_file_name[s3_file_name.rfind('.')+1:len(s3_file_name)]).upper()
     print('file_type: ', file_type)
 
@@ -114,12 +111,6 @@ def store_document(path, s3_file_name, requestId):
                 "Key": s3_prefix+'/'+s3_file_name
             },
             "Attributes": [
-                {
-                    "Key": '_source_uri',
-                    'Value': {
-                        'StringValue': source_uri
-                    }
-                },
                 {
                     "Key": '_language_code',
                     'Value': {
@@ -567,7 +558,7 @@ def lambda_handler(event, context):
             object = body
                     
             # store the object into kendra
-            store_document(path, object, requestId)
+            store_document(object, requestId)
 
             # summerization to show the content of the document
             file_type = object[object.rfind('.')+1:len(object)]
