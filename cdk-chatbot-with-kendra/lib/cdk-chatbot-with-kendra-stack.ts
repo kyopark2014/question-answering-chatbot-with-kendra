@@ -22,7 +22,7 @@ const projectName = `bedrock-with-kendra`;
 const bucketName = `storage-for-${projectName}-${region}`; 
 const accessType = "preview"; // aws or preview
 const bedrock_region = "us-east-1";  
-const kendra_region = process.env.CDK_DEFAULT_REGION;  
+const kendra_region = "ap-northeast-1";  
 const enableConversationMode = 'true';
 const enableReference = 'false';
 const enableRAG = 'true';
@@ -119,7 +119,7 @@ export class CdkChatbotWithKendraStack extends cdk.Stack {
     }); 
 
     const accountId = process.env.CDK_DEFAULT_ACCOUNT;
-    const kendraResourceArn = `arn:aws:kendra:${region}:${accountId}:index/${cfnIndex.attrId}`
+    const kendraResourceArn = `arn:aws:kendra:${kendra_region}:${accountId}:index/${cfnIndex.attrId}`
     if(debug) {
       new cdk.CfnOutput(this, `resource-arn-of-kendra-for-${projectName}`, {
         value: kendraResourceArn,
