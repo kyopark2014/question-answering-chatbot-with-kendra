@@ -26,7 +26,7 @@ const kendra_region = "ap-northeast-1";
 const enableConversationMode = 'true';
 const enableReference = 'false';
 const enableRAG = 'true';
-const conversationMothod = 'RetrievalQA'; // ConversationalRetrievalChain or RetrievalQA
+const conversationMothod = 'ConversationalRetrievalChain'; // ConversationalRetrievalChain or RetrievalQA
 
 export class CdkChatbotWithKendraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {

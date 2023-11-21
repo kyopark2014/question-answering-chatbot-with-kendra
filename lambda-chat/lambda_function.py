@@ -550,8 +550,16 @@ def lambda_handler(event, context):
                                 qa = create_ConversationalRetrievalChain()
                             
                             result = qa({"question": text})
-                            print('result: ', result)    
+
+                            print('\nquestion: ', result['question'])    
+                            print('answer: ', result['answer'])    
+                            print('chat_history: ', result['chat_history'])    
+                            print('source_documents: ', result['source_documents'])    
+                            
                             msg = result['answer']
+
+                            if len(result['source_documents'])>=1 and enableReference=='true':
+                                msg = msg+get_reference(result['source_documents'])
                         
                             chat_history_all = []  # debugging
                             for dialogue_turn in result['chat_history']:
