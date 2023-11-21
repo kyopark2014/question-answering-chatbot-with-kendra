@@ -101,6 +101,25 @@ def store_document(s3_file_name, requestId):
     file_type = (s3_file_name[s3_file_name.rfind('.')+1:len(s3_file_name)]).upper()
     print('file_type: ', file_type)
 
+    if(file_type == 'PPTX'):
+        file_type = 'PPT'
+    elif(file_type == 'TXT'):
+        file_type = 'PLAIN_TEXT'         
+    elif(file_type == 'XLS' or file_type == 'XLSX'):
+        file_type = 'MS_EXCEL'      
+    elif(file_type == 'DOC' or file_type == 'DOCX'):
+        file_type = 'MS_WORD'
+
+    kendra_client = boto3.client(
+        service_name='kendra', 
+        region_name=kendra_region,
+        config = Config(
+            retries=dict(
+                max_attempts=10
+            )
+        )
+    )
+
     documents = [
         {
             "Id": requestId,
@@ -338,7 +357,7 @@ def create_ConversationalRetrievalChain():
         #max_tokens_limit=300,
         chain_type='stuff', # 'refine'
         rephrase_question=True,  # to pass the new generated question to the combine_docs_chain                
-        # return_source_documents=True, # retrieved source 
+        return_source_documents=True, # retrieved source 
         return_generated_question=False, # generated question
     )
 
@@ -462,7 +481,7 @@ def lambda_handler(event, context):
         memory_chain = map[userId]
         print('memory_chain exist. reuse it!')
     else: 
-        memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+        memory_chain = ConversationBufferMemory(memory_key="chat_history", output_key='answer', return_messages=True)
         map[userId] = memory_chain
         print('memory_chain does not exist. create new one!')
 
@@ -519,7 +538,7 @@ def lambda_handler(event, context):
             elif text == 'clearMemory':
                 memory_chain.clear()
                 map[userId] = memory_chain
-                memory_chain = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+                memory_chain = ConversationBufferMemory(memory_key="chat_history", output_key='answer', return_messages=True)
                 print('initiate the chat memory!')
                 msg  = "The chat memory was intialized in this session."
             else:
