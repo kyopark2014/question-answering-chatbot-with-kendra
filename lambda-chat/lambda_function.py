@@ -374,7 +374,7 @@ def extract_chat_history_from_memory(memory_chain):
     return chat_history
 
 def get_revised_question(query):    
-    condense_template = """\n\nGiven the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+    condense_template = """\n\nHuman: Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
 
     Chat History:
     {chat_history}
